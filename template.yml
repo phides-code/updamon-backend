@@ -1,0 +1,109 @@
+# SAM template for API Gateway and the Go Lambda that serves /computers (and future paths).
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  AwsCfToken:
+    Type: String
+    NoEcho: true
+    Description: Token for API auth; set via --parameter-overrides AwsCfToken=xxx when deploying
+
+Resources:
+  UpdamonBackend:
+    Type: AWS::Serverless::Api
+    Description: "Serverless API for CRUD operations"
+    Properties:
+      Name: "updamon-backend"
+      StageName: Prod
+      Cors:
+        AllowMethods: "'OPTIONS, POST, GET, PUT, DELETE'"
+        AllowHeaders: "'Content-Type, X-CF-Token'"
+        # AllowOrigin: "'http://localhost:5173'" 
+        AllowOrigin: "'https://d3sf29pl3q5rvg.cloudfront.net'" 
+
+      # Logging settings
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          MetricsEnabled: true
+          DataTraceEnabled: true
+
+  UpdamonBackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 10
+      Handler: bootstrap
+      Runtime: provided.al2023
+      MemorySize: 512
+      Environment:
+        Variables:
+          AWS_CF_TOKEN: !Ref AwsCfToken  # comes from --parameter-overrides
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UpdamonComputersTable
+      Events:
+        ComputersOptions:
+          Type: Api
+          Properties:
+            Path: /computers
+            Method: OPTIONS
+            RestApiId: !Ref UpdamonBackend
+        ComputersOptionsId:
+          Type: Api
+          Properties:
+            Path: /computers/{id}
+            Method: OPTIONS
+            RestApiId: !Ref UpdamonBackend
+        GetComputer:
+          Type: Api
+          Properties:
+            Path: /computers/{id}
+            Method: GET
+            RestApiId: !Ref UpdamonBackend
+            
+        GetComputers:
+          Type: Api
+          Properties:
+            Path: /computers
+            Method: GET
+            RestApiId: !Ref UpdamonBackend
+            
+        PostComputer:
+          Type: Api
+          Properties:
+            Path: /computers
+            Method: POST
+            RestApiId: !Ref UpdamonBackend
+            
+        DeleteComputer:
+          Type: Api
+          Properties:
+            Path: /computers/{id}
+            Method: DELETE
+            RestApiId: !Ref UpdamonBackend
+            
+        UpdateComputer:
+          Type: Api
+          Properties:
+            Path: /computers/{id}
+            Method: PUT
+            RestApiId: !Ref UpdamonBackend
+            
+    Metadata:
+      BuildMethod: makefile
+
+  UpdamonComputersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UpdamonComputers
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
