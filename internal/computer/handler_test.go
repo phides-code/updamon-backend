@@ -20,7 +20,7 @@ import (
 func TestComputerHandlerCreate(t *testing.T) {
 	t.Parallel()
 
-	validCreateBody := testutil.ComputerCreateBody(testutil.TestComputerContent)
+	validCreateBody := testutil.ComputerCreateBody(testutil.TestComputerHostname)
 
 	tests := []struct {
 		name         string
@@ -28,7 +28,7 @@ func TestComputerHandlerCreate(t *testing.T) {
 		setupRepo    func() *mockComputerRepository
 		wantStatus   int
 		wantErrorMsg string
-		wantContent  string
+		wantHostname  string
 	}{
 		{
 			name: "success",
@@ -41,7 +41,7 @@ func TestComputerHandlerCreate(t *testing.T) {
 				}
 			},
 			wantStatus:  http.StatusCreated,
-			wantContent: testutil.TestComputerContent,
+			wantHostname: testutil.TestComputerHostname,
 		},
 		{
 			name: "repo failure",
@@ -95,8 +95,8 @@ func TestComputerHandlerCreate(t *testing.T) {
 			computer := decodeComputerData(t, envelope)
 			assertComputerDataKeys(t, envelope)
 
-			if computer.Content != tt.wantContent {
-				t.Fatalf("content = %q, want %q", computer.Content, tt.wantContent)
+			if computer.Hostname != tt.wantHostname {
+				t.Fatalf("hostname = %q, want %q", computer.Hostname, tt.wantHostname)
 			}
 
 			if err := domain.ValidateID(computer.ID); err != nil {
@@ -343,9 +343,9 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			wantErrorMsg: "invalid json",
 		},
 		{
-			name:         "POST empty content",
+			name:         "POST empty hostname",
 			method:       "POST",
-			body:         "{\"content\":\"\"}",
+			body:         "{\"hostname\":\"\"}",
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
@@ -358,17 +358,17 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			wantErrorMsg: "method not allowed",
 		},
 		{
-			name:         "POST whitespace content",
+			name:         "POST whitespace hostname",
 			method:       "POST",
-			body:         `{"content":"   "}`,
+			body:         `{"hostname":"   "}`,
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
 		},
 		{
-			name:         "POST content too long",
+			name:         "POST hostname too long",
 			method:       "POST",
-			body:         fmt.Sprintf(`{"content":%q}`, strings.Repeat("a", computer.MaxContentLength+1)),
+			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", computer.MaxHostnameLength+1)),
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
@@ -523,9 +523,9 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			},
 		},
 		{
-			name:         "PUT empty content",
+			name:         "PUT empty hostname",
 			pathID:       validUuid,
-			body:         `{"content":""}`,
+			body:         `{"hostname":""}`,
 			wantStatus:   http.StatusBadRequest,
 			wantComputer:   nil,
 			wantErrorMsg: "validation failed",
@@ -565,18 +565,18 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			},
 		},
 		{
-			name:         "PUT whitespace content",
+			name:         "PUT whitespace hostname",
 			pathID:       validUuid,
-			body:         `{"content":"   "}`,
+			body:         `{"hostname":"   "}`,
 			wantStatus:   http.StatusBadRequest,
 			wantComputer:   nil,
 			wantErrorMsg: "validation failed",
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},
 		{
-			name:         "PUT content too long",
+			name:         "PUT hostname too long",
 			pathID:       validUuid,
-			body:         fmt.Sprintf(`{"content":%q}`, strings.Repeat("a", computer.MaxContentLength+1)),
+			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", computer.MaxHostnameLength+1)),
 			wantStatus:   http.StatusBadRequest,
 			wantComputer:   nil,
 			wantErrorMsg: "validation failed",

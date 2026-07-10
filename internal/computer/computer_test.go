@@ -16,8 +16,8 @@ func TestValidateCreateInput(t *testing.T) {
 		input   computer.CreateInput
 		wantErr bool
 	}{
-		{name: "valid", input: computer.CreateInput{Content: "hello"}, wantErr: false},
-		{name: "empty content", input: computer.CreateInput{Content: ""}, wantErr: true},
+		{name: "valid", input: computer.CreateInput{Hostname: "hello"}, wantErr: false},
+		{name: "empty hostname", input: computer.CreateInput{Hostname: ""}, wantErr: true},
 	}
 
 	for _, tt := range tests {
@@ -46,9 +46,9 @@ func TestValidateUpdateInput(t *testing.T) {
 		input   computer.UpdateInput
 		wantErr bool
 	}{
-		{name: "valid", input: computer.UpdateInput{ID: validID, Content: "hello"}, wantErr: false},
-		{name: "invalid id", input: computer.UpdateInput{ID: "bad", Content: "hello"}, wantErr: true},
-		{name: "empty content", input: computer.UpdateInput{ID: validID, Content: ""}, wantErr: true},
+		{name: "valid", input: computer.UpdateInput{ID: validID, Hostname: "hello"}, wantErr: false},
+		{name: "invalid id", input: computer.UpdateInput{ID: "bad", Hostname: "hello"}, wantErr: true},
+		{name: "empty hostname", input: computer.UpdateInput{ID: validID, Hostname: ""}, wantErr: true},
 	}
 
 	for _, tt := range tests {

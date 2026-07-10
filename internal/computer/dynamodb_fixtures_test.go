@@ -12,7 +12,7 @@ import (
 
 func storedComputerFixture(t *testing.T) (id string, b computer.Computer, item map[string]types.AttributeValue) {
 	t.Helper()
-	id, b = testutil.ComputerWithID(testutil.TestComputerContent, testutil.TestStoredComputerCreatedOn)
+	id, b = testutil.ComputerWithID(testutil.TestComputerHostname, testutil.TestStoredComputerCreatedOn)
 	var err error
 	item, err = attributevalue.MarshalMap(b)
 	if err != nil {

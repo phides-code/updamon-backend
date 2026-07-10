@@ -8,7 +8,7 @@ import (
 
 // existingComputerFixture returns an ID-linked computer and matching PUT body for get/update/delete tests.
 func existingComputerFixture() (id string, b computer.Computer, updateBody string) {
-	id, b = testutil.ComputerWithID(testutil.TestComputerContent, 0)
-	updateBody = testutil.ComputerCreateBody(testutil.TestComputerContent)
+	id, b = testutil.ComputerWithID(testutil.TestComputerHostname, 0)
+	updateBody = testutil.ComputerCreateBody(testutil.TestComputerHostname)
 	return
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-const contentTypeJSON = "application/json"
+const hostnameTypeJSON = "application/json"
 
 type APIResponse struct {
 	Data  any     `json:"data"`
@@ -27,7 +27,7 @@ func JSONResponse(statusCode int, data any, errMsg *string) (events.APIGatewayPr
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
 		Headers: map[string]string{
-			"Content-Type": contentTypeJSON,
+			"Hostname-Type": hostnameTypeJSON,
 		},
 		Body: string(body),
 	}, nil

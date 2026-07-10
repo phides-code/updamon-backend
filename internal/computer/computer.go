@@ -4,36 +4,36 @@ package computer
 import "github.com/phides-code/go-multi-api/internal/domain"
 
 const (
-	MinContentLength = 1
-	MaxContentLength = 1000
+	MinHostnameLength = 1
+	MaxHostnameLength = 100
 )
 
 type Computer struct {
 	ID        string `json:"id" dynamodbav:"id"`
-	Content   string `json:"content" dynamodbav:"content"`
+	Hostname  string `json:"hostname" dynamodbav:"hostname"`
 	CreatedOn uint64 `json:"createdOn" dynamodbav:"createdOn"`
 }
 
 type CreateInput struct {
-	Content string
+	Hostname string
 }
 
 type UpdateInput struct {
-	ID      string
-	Content string
+	ID       string
+	Hostname string
 }
 
-func validateContent(content string) error {
-	return domain.ValidateRequiredString(content, MinContentLength, MaxContentLength)
+func validateHostname(hostname string) error {
+	return domain.ValidateRequiredString(hostname, MinHostnameLength, MaxHostnameLength)
 }
 
 func ValidateCreateInput(input CreateInput) error {
-	return validateContent(input.Content)
+	return validateHostname(input.Hostname)
 }
 
 func ValidateUpdateInput(input UpdateInput) error {
 	if err := domain.ValidateID(input.ID); err != nil {
 		return err
 	}
-	return validateContent(input.Content)
+	return validateHostname(input.Hostname)
 }

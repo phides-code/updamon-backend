@@ -16,8 +16,8 @@ func TestSuccessResponseEnvelope(t *testing.T) {
 	if err != nil {
 		t.Fatalf("success response: %v", err)
 	}
-	if resp.Headers["Content-Type"] != "application/json" {
-		t.Fatalf("content type = %q", resp.Headers["Content-Type"])
+	if resp.Headers["Hostname-Type"] != "application/json" {
+		t.Fatalf("hostname type = %q", resp.Headers["Hostname-Type"])
 	}
 
 	var envelope platform.APIResponse

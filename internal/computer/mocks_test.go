@@ -60,7 +60,7 @@ func emptyComputerRepo() *mockComputerRepository {
 func dispatchComputerRepo() *mockComputerRepository {
 	return &mockComputerRepository{
 		getFn: func(_ context.Context, gotID string) (computer.Computer, error) {
-			return computer.Computer{ID: gotID, Content: "found"}, nil
+			return computer.Computer{ID: gotID, Hostname: "found"}, nil
 		},
 		listFn: func(_ context.Context) ([]computer.Computer, error) {
 			return nil, nil
