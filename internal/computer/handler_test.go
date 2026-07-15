@@ -20,7 +20,7 @@ import (
 func TestComputerHandlerCreate(t *testing.T) {
 	t.Parallel()
 
-	validCreateBody := testutil.ComputerCreateBody(testutil.TestComputerHostname)
+	validCreateBody := testutil.ComputerCreateBody(testutil.TestComputerHostname, testutil.TestComputerIP)
 
 	tests := []struct {
 		name         string
@@ -28,7 +28,8 @@ func TestComputerHandlerCreate(t *testing.T) {
 		setupRepo    func() *mockComputerRepository
 		wantStatus   int
 		wantErrorMsg string
-		wantHostname  string
+		wantHostname string
+		wantIP       string
 	}{
 		{
 			name: "success",
@@ -40,8 +41,9 @@ func TestComputerHandlerCreate(t *testing.T) {
 					},
 				}
 			},
-			wantStatus:  http.StatusCreated,
+			wantStatus:   http.StatusCreated,
 			wantHostname: testutil.TestComputerHostname,
+			wantIP:       testutil.TestComputerIP,
 		},
 		{
 			name: "repo failure",
@@ -98,6 +100,9 @@ func TestComputerHandlerCreate(t *testing.T) {
 			if computer.Hostname != tt.wantHostname {
 				t.Fatalf("hostname = %q, want %q", computer.Hostname, tt.wantHostname)
 			}
+			if computer.IP != tt.wantIP {
+				t.Fatalf("ip = %q, want %q", computer.IP, tt.wantIP)
+			}
 
 			if err := domain.ValidateID(computer.ID); err != nil {
 				t.Fatalf("expected generated uuid: %v", err)
@@ -122,7 +127,7 @@ func TestComputerHandlerDelete(t *testing.T) {
 		name         string
 		pathID       string
 		wantStatus   int
-		wantComputer   *computer.Computer
+		wantComputer *computer.Computer
 		wantErrorMsg string
 		setupRepo    func(pathID string) *mockComputerRepository
 	}{
@@ -130,7 +135,7 @@ func TestComputerHandlerDelete(t *testing.T) {
 			name:         "DELETE success",
 			pathID:       validUuid,
 			wantStatus:   http.StatusOK,
-			wantComputer:   &deletedComputer,
+			wantComputer: &deletedComputer,
 			wantErrorMsg: "",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -147,7 +152,7 @@ func TestComputerHandlerDelete(t *testing.T) {
 			name:         "DELETE invalid ID",
 			pathID:       "bad id",
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "invalid id",
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},
@@ -155,7 +160,7 @@ func TestComputerHandlerDelete(t *testing.T) {
 			name:         "DELETE ID not found",
 			pathID:       validUuid,
 			wantStatus:   http.StatusNotFound,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "not found",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -172,7 +177,7 @@ func TestComputerHandlerDelete(t *testing.T) {
 			name:         "DELETE repo failure",
 			pathID:       validUuid,
 			wantStatus:   http.StatusInternalServerError,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: platform.InternalServerErrorMessage,
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -227,7 +232,7 @@ func TestComputerHandlerGetByID(t *testing.T) {
 		name         string
 		pathID       string
 		wantStatus   int
-		wantComputer   *computer.Computer
+		wantComputer *computer.Computer
 		wantErrorMsg string
 		setupRepo    func(pathID string) *mockComputerRepository
 	}{
@@ -235,7 +240,7 @@ func TestComputerHandlerGetByID(t *testing.T) {
 			name:         "GET by ID success",
 			pathID:       validUuid,
 			wantStatus:   http.StatusOK,
-			wantComputer:   &validComputer,
+			wantComputer: &validComputer,
 			wantErrorMsg: "",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -252,7 +257,7 @@ func TestComputerHandlerGetByID(t *testing.T) {
 			name:         "GET by ID invalid",
 			pathID:       "bad id",
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "invalid id",
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},
@@ -260,7 +265,7 @@ func TestComputerHandlerGetByID(t *testing.T) {
 			name:         "GET by ID not found",
 			pathID:       validUuid,
 			wantStatus:   http.StatusNotFound,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "not found",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -277,7 +282,7 @@ func TestComputerHandlerGetByID(t *testing.T) {
 			name:         "GET by ID repo failure",
 			pathID:       validUuid,
 			wantStatus:   http.StatusInternalServerError,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: platform.InternalServerErrorMessage,
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -369,6 +374,22 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			name:         "POST hostname too long",
 			method:       "POST",
 			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", computer.MaxHostnameLength+1)),
+			wantStatus:   http.StatusBadRequest,
+			wantErrorMsg: "validation failed",
+			setupRepo:    panicComputerRepo,
+		},
+		{
+			name:         "POST invalid ip",
+			method:       "POST",
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, testutil.TestComputerInvalidIP),
+			wantStatus:   http.StatusBadRequest,
+			wantErrorMsg: "validation failed",
+			setupRepo:    panicComputerRepo,
+		},
+		{
+			name:         "POST empty ip",
+			method:       "POST",
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, ""),
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
@@ -485,7 +506,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 		pathID       string
 		body         string
 		wantStatus   int
-		wantComputer   *computer.Computer
+		wantComputer *computer.Computer
 		wantErrorMsg string
 		setupRepo    func(pathID string) *mockComputerRepository
 	}{
@@ -494,7 +515,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         validUpdateBody,
 			wantStatus:   http.StatusOK,
-			wantComputer:   &updatedComputer,
+			wantComputer: &updatedComputer,
 			wantErrorMsg: "",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return updateComputerRepo(pathID, updatedComputer)
@@ -505,7 +526,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       "bad id",
 			body:         validUpdateBody,
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "invalid id",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return emptyComputerRepo()
@@ -516,7 +537,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         "not json",
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "invalid json",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return emptyComputerRepo()
@@ -527,7 +548,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         `{"hostname":""}`,
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "validation failed",
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},
@@ -536,7 +557,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			wantStatus:   http.StatusNotFound,
 			body:         validUpdateBody,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "not found",
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -554,7 +575,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         validUpdateBody,
 			wantStatus:   http.StatusInternalServerError,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: platform.InternalServerErrorMessage,
 			setupRepo: func(pathID string) *mockComputerRepository {
 				return &mockComputerRepository{
@@ -569,7 +590,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         `{"hostname":"   "}`,
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
 			wantErrorMsg: "validation failed",
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},
@@ -578,7 +599,25 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", computer.MaxHostnameLength+1)),
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
+			wantErrorMsg: "validation failed",
+			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
+		},
+		{
+			name:         "PUT invalid ip",
+			pathID:       validUuid,
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, testutil.TestComputerInvalidIP),
+			wantStatus:   http.StatusBadRequest,
+			wantComputer: nil,
+			wantErrorMsg: "validation failed",
+			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
+		},
+		{
+			name:         "PUT empty ip",
+			pathID:       validUuid,
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, ""),
+			wantStatus:   http.StatusBadRequest,
+			wantComputer: nil,
 			wantErrorMsg: "validation failed",
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},

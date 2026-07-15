@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/phides-code/go-multi-api/internal/computer"
+	"github.com/phides-code/go-multi-api/internal/testutil"
 )
 
 func TestValidateCreateInput(t *testing.T) {
@@ -16,8 +17,21 @@ func TestValidateCreateInput(t *testing.T) {
 		input   computer.CreateInput
 		wantErr bool
 	}{
-		{name: "valid", input: computer.CreateInput{Hostname: "hello"}, wantErr: false},
-		{name: "empty hostname", input: computer.CreateInput{Hostname: ""}, wantErr: true},
+		{
+			name:    "valid",
+			input:   computer.CreateInput{Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP},
+			wantErr: false,
+		},
+		{
+			name:    "empty hostname",
+			input:   computer.CreateInput{Hostname: "", IP: testutil.TestComputerIP},
+			wantErr: true,
+		},
+		{
+			name:    "invalid ip",
+			input:   computer.CreateInput{Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerInvalidIP},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -46,9 +60,26 @@ func TestValidateUpdateInput(t *testing.T) {
 		input   computer.UpdateInput
 		wantErr bool
 	}{
-		{name: "valid", input: computer.UpdateInput{ID: validID, Hostname: "hello"}, wantErr: false},
-		{name: "invalid id", input: computer.UpdateInput{ID: "bad", Hostname: "hello"}, wantErr: true},
-		{name: "empty hostname", input: computer.UpdateInput{ID: validID, Hostname: ""}, wantErr: true},
+		{
+			name:    "valid",
+			input:   computer.UpdateInput{ID: validID, Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP},
+			wantErr: false,
+		},
+		{
+			name:    "invalid id",
+			input:   computer.UpdateInput{ID: "bad", Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP},
+			wantErr: true,
+		},
+		{
+			name:    "empty hostname",
+			input:   computer.UpdateInput{ID: validID, Hostname: "", IP: testutil.TestComputerIP},
+			wantErr: true,
+		},
+		{
+			name:    "invalid ip",
+			input:   computer.UpdateInput{ID: validID, Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerInvalidIP},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {

@@ -116,12 +116,17 @@ func (r *dynamoRepository) Update(ctx context.Context, computer Computer) (Compu
 		Key: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: computer.ID},
 		},
-		UpdateExpression:         aws.String("SET #hostname = :hostname"),
-		ConditionExpression:      aws.String("attribute_exists(id)"),
-		ExpressionAttributeNames: map[string]string{"#hostname": "hostname"},
+		UpdateExpression:    aws.String("SET #hostname = :hostname, #ip = :ip"),
+		ConditionExpression: aws.String("attribute_exists(id)"),
+		ExpressionAttributeNames: map[string]string{
+			"#hostname": "hostname",
+			"#ip":       "ip",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":hostname": &types.AttributeValueMemberS{Value: computer.Hostname},
+			":ip":       &types.AttributeValueMemberS{Value: computer.IP},
 		},
+
 		ReturnValues: types.ReturnValueAllNew,
 	})
 	if err != nil {
@@ -162,4 +167,3 @@ func (r *dynamoRepository) Delete(ctx context.Context, id string) (Computer, err
 
 	return deleted, nil
 }
-

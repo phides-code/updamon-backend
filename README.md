@@ -63,7 +63,7 @@ Return `ErrValidationFailed` from validation; no per-field error strings unless 
 | `GET` | `/computers` | List all |
 | `GET` | `/computers/{id}` | Get by UUID |
 | `POST` | `/computers` | Create; server sets `id`, `createdOn` |
-| `PUT` | `/computers/{id}` | Update `content`; 404 if missing |
+| `PUT` | `/computers/{id}` | Update `hostname`, `ip`; 404 if missing |
 | `DELETE` | `/computers/{id}` | Hard delete; returns deleted item |
 
 **Item shape** (single computer in create/get/update/delete responses; list returns an array of the same shape):
@@ -71,18 +71,19 @@ Return `ErrValidationFailed` from validation; no per-field error strings unless 
 ```json
 {
   "id": "uuid",
-  "content": "string",
+  "hostname": "string",
+  "ip": "dotted IPv4",
   "createdOn": 1717516800000
 }
 ```
 
-**Create body** (POST): `{ "content": "string" }`
+**Create body** (POST): `{ "hostname": "string", "ip": "dotted IPv4" }`
 
-**Update body** (PUT): `{ "content": "string" }`
+**Update body** (PUT): `{ "hostname": "string", "ip": "dotted IPv4" }`
 
 **List** (`GET /computers`): `data` is an array of item shape. The repository scans the full table (DynamoDB pagination is handled internally, not exposed over HTTP).
 
-**Validation:** `content` required on create/update, 1–1000 Unicode characters (`MinContentLength`–`MaxContentLength` in `internal/computer/computer.go`) → 400 `validation failed`. Path `{id}` must be UUID → 400 `invalid id`.
+**Validation:** On create/update, `hostname` required, 1–100 Unicode characters (`MinHostnameLength`–`MaxHostnameLength` in `internal/computer/computer.go`); `ip` required and must be IPv4 → 400 `validation failed`. Path `{id}` must be UUID → 400 `invalid id`.
 
 ## Development
 

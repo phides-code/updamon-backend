@@ -66,19 +66,21 @@ func (h *Handler) getByID(ctx context.Context, id string) (events.APIGatewayProx
 func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayProxyResponse, error) {
 	var payload struct {
 		Hostname string `json:"hostname"`
+		IP       string `json:"ip"`
 	}
 	if err := json.Unmarshal([]byte(body), &payload); err != nil {
 		return h.errorResponse(ctx, domain.ErrInvalidJSON, "create computer")
 	}
 
-	input := CreateInput{Hostname: payload.Hostname}
+	input := CreateInput{Hostname: payload.Hostname, IP: payload.IP}
 	if err := ValidateCreateInput(input); err != nil {
 		return h.errorResponse(ctx, err, "create computer")
 	}
 
 	computer := Computer{
 		ID:        domain.NewID(),
-		Hostname:   payload.Hostname,
+		Hostname:  payload.Hostname,
+		IP:        payload.IP,
 		CreatedOn: uint64(time.Now().UnixMilli()),
 	}
 
@@ -97,19 +99,21 @@ func (h *Handler) update(ctx context.Context, id, body string) (events.APIGatewa
 
 	var payload struct {
 		Hostname string `json:"hostname"`
+		IP       string `json:"ip"`
 	}
 	if err := json.Unmarshal([]byte(body), &payload); err != nil {
 		return h.errorResponse(ctx, domain.ErrInvalidJSON, "update computer")
 	}
 
-	input := UpdateInput{ID: id, Hostname: payload.Hostname}
+	input := UpdateInput{ID: id, Hostname: payload.Hostname, IP: payload.IP}
 	if err := ValidateUpdateInput(input); err != nil {
 		return h.errorResponse(ctx, err, "update computer")
 	}
 
 	updated, err := h.repo.Update(ctx, Computer{
-		ID:      id,
+		ID:       id,
 		Hostname: payload.Hostname,
+		IP:       payload.IP,
 	})
 	if err != nil {
 		return h.errorResponse(ctx, err, "update computer")

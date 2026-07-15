@@ -62,10 +62,10 @@ func TestComputerRepositoryGetByID(t *testing.T) {
 	validId, validComputer, item := storedComputerFixture(t)
 	errSDK := errors.New("dynamo unavailable")
 	tests := []struct {
-		name       string
-		setupMock  func(t *testing.T) *mockDynamoClient
+		name         string
+		setupMock    func(t *testing.T) *mockDynamoClient
 		wantComputer computer.Computer
-		wantErr    error
+		wantErr      error
 	}{
 		{
 			name: "found",
@@ -77,7 +77,7 @@ func TestComputerRepositoryGetByID(t *testing.T) {
 				}
 			},
 			wantComputer: validComputer,
-			wantErr:    nil,
+			wantErr:      nil,
 		},
 		{
 			name: "not found",
@@ -89,7 +89,7 @@ func TestComputerRepositoryGetByID(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    domain.ErrNotFound,
+			wantErr:      domain.ErrNotFound,
 		},
 		{
 			name: "sdk error",
@@ -101,7 +101,7 @@ func TestComputerRepositoryGetByID(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    errSDK,
+			wantErr:      errSDK,
 		},
 	}
 
@@ -122,10 +122,10 @@ func TestComputerRepositoryDelete(t *testing.T) {
 	validId, validComputer, item := storedComputerFixture(t)
 	errSDK := errors.New("dynamo unavailable")
 	tests := []struct {
-		name       string
-		setupMock  func(t *testing.T) *mockDynamoClient
+		name         string
+		setupMock    func(t *testing.T) *mockDynamoClient
 		wantComputer computer.Computer
-		wantErr    error
+		wantErr      error
 	}{
 		{
 			name: "success",
@@ -137,7 +137,7 @@ func TestComputerRepositoryDelete(t *testing.T) {
 				}
 			},
 			wantComputer: validComputer,
-			wantErr:    nil,
+			wantErr:      nil,
 		},
 		{
 			name: "not found",
@@ -149,7 +149,7 @@ func TestComputerRepositoryDelete(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    domain.ErrNotFound,
+			wantErr:      domain.ErrNotFound,
 		},
 		{
 			name: "sdk error",
@@ -161,7 +161,7 @@ func TestComputerRepositoryDelete(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    errSDK,
+			wantErr:      errSDK,
 		},
 	}
 
@@ -179,7 +179,7 @@ func TestComputerRepositoryDelete(t *testing.T) {
 func TestComputerRepositoryUpdate(t *testing.T) {
 	t.Parallel()
 
-	updatedComputer := computer.Computer{ID: uuid.NewString(), Hostname: "updated", CreatedOn: 12345}
+	updatedComputer := computer.Computer{ID: uuid.NewString(), Hostname: "updated", IP: testutil.TestComputerIP, CreatedOn: 12345}
 	errSDK := errors.New("dynamo unavailable")
 
 	item, err := attributevalue.MarshalMap(updatedComputer)
@@ -188,10 +188,10 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		setupMock  func(t *testing.T) *mockDynamoClient
+		name         string
+		setupMock    func(t *testing.T) *mockDynamoClient
 		wantComputer computer.Computer
-		wantErr    error
+		wantErr      error
 	}{
 		{
 			name: "success",
@@ -200,13 +200,14 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 					updateItemFn: func(_ context.Context, params *awsdynamodb.UpdateItemInput, _ ...func(*awsdynamodb.Options)) (*awsdynamodb.UpdateItemOutput, error) {
 						testutil.AssertUpdateSets(t, params, map[string]string{
 							"hostname": updatedComputer.Hostname,
+							"ip":       updatedComputer.IP,
 						})
 						return &awsdynamodb.UpdateItemOutput{Attributes: item}, nil
 					},
 				}
 			},
 			wantComputer: updatedComputer,
-			wantErr:    nil,
+			wantErr:      nil,
 		},
 		{
 			name: "not found",
@@ -218,7 +219,7 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    domain.ErrNotFound,
+			wantErr:      domain.ErrNotFound,
 		},
 		{
 			name: "sdk error",
@@ -230,7 +231,7 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    errSDK,
+			wantErr:      errSDK,
 		},
 	}
 
@@ -248,14 +249,19 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 func TestComputerRepositoryCreate(t *testing.T) {
 	t.Parallel()
 
-	want := computer.Computer{ID: uuid.NewString(), Hostname: "new", CreatedOn: 12345}
+	want := computer.Computer{
+		ID:        uuid.NewString(),
+		Hostname:  "new",
+		IP:        testutil.TestComputerIP,
+		CreatedOn: 12345,
+	}
 	errSDK := errors.New("dynamo unavailable")
 
 	tests := []struct {
-		name       string
-		setupMock  func(t *testing.T) *mockDynamoClient
+		name         string
+		setupMock    func(t *testing.T) *mockDynamoClient
 		wantComputer computer.Computer
-		wantErr    error
+		wantErr      error
 	}{
 		{
 			name: "success",
@@ -268,7 +274,7 @@ func TestComputerRepositoryCreate(t *testing.T) {
 				}
 			},
 			wantComputer: want,
-			wantErr:    nil,
+			wantErr:      nil,
 		},
 		{
 			name: "duplicate id",
@@ -280,7 +286,7 @@ func TestComputerRepositoryCreate(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    domain.ErrAlreadyExists,
+			wantErr:      domain.ErrAlreadyExists,
 		},
 		{
 			name: "sdk error",
@@ -292,7 +298,7 @@ func TestComputerRepositoryCreate(t *testing.T) {
 				}
 			},
 			wantComputer: computer.Computer{},
-			wantErr:    errSDK,
+			wantErr:      errSDK,
 		},
 	}
 
