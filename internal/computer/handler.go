@@ -67,12 +67,13 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 	var payload struct {
 		Hostname string `json:"hostname"`
 		IP       string `json:"ip"`
+		OS       string `json:"os"`
 	}
 	if err := json.Unmarshal([]byte(body), &payload); err != nil {
 		return h.errorResponse(ctx, domain.ErrInvalidJSON, "create computer")
 	}
 
-	input := CreateInput{Hostname: payload.Hostname, IP: payload.IP}
+	input := CreateInput{Hostname: payload.Hostname, IP: payload.IP, OS: payload.OS}
 	if err := ValidateCreateInput(input); err != nil {
 		return h.errorResponse(ctx, err, "create computer")
 	}
@@ -81,6 +82,7 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 		ID:        domain.NewID(),
 		Hostname:  payload.Hostname,
 		IP:        payload.IP,
+		OS:        payload.OS,
 		CreatedOn: uint64(time.Now().UnixMilli()),
 	}
 
@@ -100,12 +102,13 @@ func (h *Handler) update(ctx context.Context, id, body string) (events.APIGatewa
 	var payload struct {
 		Hostname string `json:"hostname"`
 		IP       string `json:"ip"`
+		OS       string `json:"os"`
 	}
 	if err := json.Unmarshal([]byte(body), &payload); err != nil {
 		return h.errorResponse(ctx, domain.ErrInvalidJSON, "update computer")
 	}
 
-	input := UpdateInput{ID: id, Hostname: payload.Hostname, IP: payload.IP}
+	input := UpdateInput{ID: id, Hostname: payload.Hostname, IP: payload.IP, OS: payload.OS}
 	if err := ValidateUpdateInput(input); err != nil {
 		return h.errorResponse(ctx, err, "update computer")
 	}
@@ -114,6 +117,7 @@ func (h *Handler) update(ctx context.Context, id, body string) (events.APIGatewa
 		ID:       id,
 		Hostname: payload.Hostname,
 		IP:       payload.IP,
+		OS:       payload.OS,
 	})
 	if err != nil {
 		return h.errorResponse(ctx, err, "update computer")

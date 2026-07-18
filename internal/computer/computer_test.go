@@ -18,18 +18,39 @@ func TestValidateCreateInput(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid",
-			input:   computer.CreateInput{Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP},
+			name: "valid",
+			input: computer.CreateInput{
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerIP,
+				OS:       testutil.TestComputerOS,
+			},
 			wantErr: false,
 		},
 		{
-			name:    "empty hostname",
-			input:   computer.CreateInput{Hostname: "", IP: testutil.TestComputerIP},
+			name: "empty hostname",
+			input: computer.CreateInput{
+				Hostname: "",
+				IP:       testutil.TestComputerIP,
+				OS:       testutil.TestComputerOS,
+			},
 			wantErr: true,
 		},
 		{
-			name:    "invalid ip",
-			input:   computer.CreateInput{Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerInvalidIP},
+			name: "invalid ip",
+			input: computer.CreateInput{
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerInvalidIP,
+				OS:       testutil.TestComputerOS,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty os",
+			input: computer.CreateInput{
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerIP,
+				OS:       "",
+			},
 			wantErr: true,
 		},
 	}
@@ -61,23 +82,53 @@ func TestValidateUpdateInput(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid",
-			input:   computer.UpdateInput{ID: validID, Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP},
+			name: "valid",
+			input: computer.UpdateInput{
+				ID:       validID,
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerIP,
+				OS:       testutil.TestComputerOS,
+			},
 			wantErr: false,
 		},
 		{
-			name:    "invalid id",
-			input:   computer.UpdateInput{ID: "bad", Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP},
+			name: "invalid id",
+			input: computer.UpdateInput{
+				ID:       "bad",
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerIP,
+				OS:       testutil.TestComputerOS,
+			},
 			wantErr: true,
 		},
 		{
-			name:    "empty hostname",
-			input:   computer.UpdateInput{ID: validID, Hostname: "", IP: testutil.TestComputerIP},
+			name: "empty hostname",
+			input: computer.UpdateInput{
+				ID:       validID,
+				Hostname: "",
+				IP:       testutil.TestComputerIP,
+				OS:       testutil.TestComputerOS,
+			},
 			wantErr: true,
 		},
 		{
-			name:    "invalid ip",
-			input:   computer.UpdateInput{ID: validID, Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerInvalidIP},
+			name: "invalid ip",
+			input: computer.UpdateInput{
+				ID:       validID,
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerInvalidIP,
+				OS:       testutil.TestComputerOS,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty os",
+			input: computer.UpdateInput{
+				ID:       validID,
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerIP,
+				OS:       "",
+			},
 			wantErr: true,
 		},
 	}

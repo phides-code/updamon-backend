@@ -179,7 +179,7 @@ func TestComputerRepositoryDelete(t *testing.T) {
 func TestComputerRepositoryUpdate(t *testing.T) {
 	t.Parallel()
 
-	updatedComputer := computer.Computer{ID: uuid.NewString(), Hostname: "updated", IP: testutil.TestComputerIP, CreatedOn: 12345}
+	updatedComputer := computer.Computer{ID: uuid.NewString(), Hostname: testutil.TestComputerHostname, IP: testutil.TestComputerIP, OS: testutil.TestComputerOS, CreatedOn: 12345}
 	errSDK := errors.New("dynamo unavailable")
 
 	item, err := attributevalue.MarshalMap(updatedComputer)
@@ -201,6 +201,7 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 						testutil.AssertUpdateSets(t, params, map[string]string{
 							"hostname": updatedComputer.Hostname,
 							"ip":       updatedComputer.IP,
+							"os":       updatedComputer.OS,
 						})
 						return &awsdynamodb.UpdateItemOutput{Attributes: item}, nil
 					},
@@ -253,6 +254,7 @@ func TestComputerRepositoryCreate(t *testing.T) {
 		ID:        uuid.NewString(),
 		Hostname:  "new",
 		IP:        testutil.TestComputerIP,
+		OS:        testutil.TestComputerOS,
 		CreatedOn: 12345,
 	}
 	errSDK := errors.New("dynamo unavailable")

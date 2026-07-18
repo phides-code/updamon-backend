@@ -20,7 +20,7 @@ import (
 func TestComputerHandlerCreate(t *testing.T) {
 	t.Parallel()
 
-	validCreateBody := testutil.ComputerCreateBody(testutil.TestComputerHostname, testutil.TestComputerIP)
+	validCreateBody := testutil.ComputerCreateBody(testutil.TestComputerHostname, testutil.TestComputerIP, testutil.TestComputerOS)
 
 	tests := []struct {
 		name         string
@@ -30,6 +30,7 @@ func TestComputerHandlerCreate(t *testing.T) {
 		wantErrorMsg string
 		wantHostname string
 		wantIP       string
+		wantOS       string
 	}{
 		{
 			name: "success",
@@ -44,6 +45,7 @@ func TestComputerHandlerCreate(t *testing.T) {
 			wantStatus:   http.StatusCreated,
 			wantHostname: testutil.TestComputerHostname,
 			wantIP:       testutil.TestComputerIP,
+			wantOS:       testutil.TestComputerOS,
 		},
 		{
 			name: "repo failure",
@@ -102,6 +104,9 @@ func TestComputerHandlerCreate(t *testing.T) {
 			}
 			if computer.IP != tt.wantIP {
 				t.Fatalf("ip = %q, want %q", computer.IP, tt.wantIP)
+			}
+			if computer.OS != tt.wantOS {
+				t.Fatalf("os = %q, want %q", computer.OS, tt.wantOS)
 			}
 
 			if err := domain.ValidateID(computer.ID); err != nil {
@@ -381,7 +386,7 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 		{
 			name:         "POST invalid ip",
 			method:       "POST",
-			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, testutil.TestComputerInvalidIP),
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q,"os":%q}`, testutil.TestComputerHostname, testutil.TestComputerInvalidIP, testutil.TestComputerOS),
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
@@ -389,7 +394,15 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 		{
 			name:         "POST empty ip",
 			method:       "POST",
-			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, ""),
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q,"os":%q}`, testutil.TestComputerHostname, "", testutil.TestComputerOS),
+			wantStatus:   http.StatusBadRequest,
+			wantErrorMsg: "validation failed",
+			setupRepo:    panicComputerRepo,
+		},
+		{
+			name:         "POST empty os",
+			method:       "POST",
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q,"os":%q}`, testutil.TestComputerHostname, testutil.TestComputerIP, ""),
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
@@ -606,7 +619,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 		{
 			name:         "PUT invalid ip",
 			pathID:       validUuid,
-			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, testutil.TestComputerInvalidIP),
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q,"os":%q}`, testutil.TestComputerHostname, testutil.TestComputerInvalidIP, testutil.TestComputerOS),
 			wantStatus:   http.StatusBadRequest,
 			wantComputer: nil,
 			wantErrorMsg: "validation failed",
@@ -615,7 +628,16 @@ func TestComputerHandlerUpdate(t *testing.T) {
 		{
 			name:         "PUT empty ip",
 			pathID:       validUuid,
-			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q}`, testutil.TestComputerHostname, ""),
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q,"os":%q}`, testutil.TestComputerHostname, "", testutil.TestComputerOS),
+			wantStatus:   http.StatusBadRequest,
+			wantComputer: nil,
+			wantErrorMsg: "validation failed",
+			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
+		},
+		{
+			name:         "PUT empty os",
+			pathID:       validUuid,
+			body:         fmt.Sprintf(`{"hostname":%q,"ip":%q,"os":%q}`, testutil.TestComputerHostname, testutil.TestComputerIP, ""),
 			wantStatus:   http.StatusBadRequest,
 			wantComputer: nil,
 			wantErrorMsg: "validation failed",

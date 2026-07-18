@@ -58,7 +58,7 @@ func assertComputerDataKeys(t *testing.T, envelope platform.APIResponse) {
 		t.Fatalf("unmarshal data keys: %v", err)
 	}
 
-	want := []string{"hostname", "createdOn", "id", "ip"}
+	want := []string{"hostname", "createdOn", "id", "ip", "os"}
 	if len(keys) != len(want) {
 		t.Fatalf("data has %d keys %v, want exactly %v", len(keys), maps.Keys(keys), want)
 	}

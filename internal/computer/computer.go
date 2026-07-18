@@ -11,22 +11,25 @@ type Computer struct {
 	ID        string `json:"id" dynamodbav:"id"`
 	Hostname  string `json:"hostname" dynamodbav:"hostname"`
 	IP        string `json:"ip" dynamodbav:"ip"`
+	OS        string `json:"os" dynamodbav:"os"`
 	CreatedOn uint64 `json:"createdOn" dynamodbav:"createdOn"`
 }
 
 type CreateInput struct {
 	Hostname string
 	IP       string
+	OS       string
 }
 
 type UpdateInput struct {
 	ID       string
 	Hostname string
 	IP       string
+	OS       string
 }
 
-func validateHostname(hostname string) error {
-	return domain.ValidateRequiredString(hostname, domain.DefaultMinStringLength, domain.DefaultMaxStringLength)
+func validateString(s string) error {
+	return domain.ValidateRequiredString(s, domain.DefaultMinStringLength, domain.DefaultMaxStringLength)
 }
 
 func validateIP(ip string) error {
@@ -38,18 +41,24 @@ func validateIP(ip string) error {
 }
 
 func ValidateCreateInput(input CreateInput) error {
-	if err := validateHostname(input.Hostname); err != nil {
+	if err := validateString(input.Hostname); err != nil {
 		return err
 	}
-	return validateIP(input.IP)
+	if err := validateIP(input.IP); err != nil {
+		return err
+	}
+	return validateString(input.OS)
 }
 
 func ValidateUpdateInput(input UpdateInput) error {
 	if err := domain.ValidateID(input.ID); err != nil {
 		return err
 	}
-	if err := validateHostname(input.Hostname); err != nil {
+	if err := validateString(input.Hostname); err != nil {
 		return err
 	}
-	return validateIP(input.IP)
+	if err := validateIP(input.IP); err != nil {
+		return err
+	}
+	return validateString(input.OS)
 }
