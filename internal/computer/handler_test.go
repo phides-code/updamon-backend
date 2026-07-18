@@ -373,7 +373,7 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 		{
 			name:         "POST hostname too long",
 			method:       "POST",
-			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", computer.MaxHostnameLength+1)),
+			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", domain.DefaultMaxStringLength+1)),
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: "validation failed",
 			setupRepo:    panicComputerRepo,
@@ -597,7 +597,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 		{
 			name:         "PUT hostname too long",
 			pathID:       validUuid,
-			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", computer.MaxHostnameLength+1)),
+			body:         fmt.Sprintf(`{"hostname":%q}`, strings.Repeat("a", domain.DefaultMaxStringLength+1)),
 			wantStatus:   http.StatusBadRequest,
 			wantComputer: nil,
 			wantErrorMsg: "validation failed",

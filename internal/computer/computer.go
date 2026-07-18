@@ -7,11 +7,6 @@ import (
 	"github.com/phides-code/go-multi-api/internal/domain"
 )
 
-const (
-	MinHostnameLength = 1
-	MaxHostnameLength = 100
-)
-
 type Computer struct {
 	ID        string `json:"id" dynamodbav:"id"`
 	Hostname  string `json:"hostname" dynamodbav:"hostname"`
@@ -31,7 +26,7 @@ type UpdateInput struct {
 }
 
 func validateHostname(hostname string) error {
-	return domain.ValidateRequiredString(hostname, MinHostnameLength, MaxHostnameLength)
+	return domain.ValidateRequiredString(hostname, domain.DefaultMinStringLength, domain.DefaultMaxStringLength)
 }
 
 func validateIP(ip string) error {

@@ -83,7 +83,7 @@ Return `ErrValidationFailed` from validation; no per-field error strings unless 
 
 **List** (`GET /computers`): `data` is an array of item shape. The repository scans the full table (DynamoDB pagination is handled internally, not exposed over HTTP).
 
-**Validation:** On create/update, `hostname` required, 1–100 Unicode characters (`MinHostnameLength`–`MaxHostnameLength` in `internal/computer/computer.go`); `ip` required and must be IPv4 → 400 `validation failed`. Path `{id}` must be UUID → 400 `invalid id`.
+**Validation:** On create/update, `hostname` required, 1–100 Unicode characters (default string bounds: `domain.DefaultMinStringLength`–`DefaultMaxStringLength`); `ip` required and must be IPv4 → 400 `validation failed`. Path `{id}` must be UUID → 400 `invalid id`.
 
 ## Development
 
