@@ -15,8 +15,15 @@ const TestComputerHostname = "cavendish"
 // TestComputerIP is the canonical valid IPv4 address in handler and DynamoDB tests.
 const TestComputerIP = "192.168.1.10"
 
-// TestComputerRating is the canonical valid rating in handler and DynamoDB tests.
-const TestComputerRating = 50
+// Canonical valid hardware/OS field values for handler and DynamoDB tests.
+const (
+	TestComputerOS      = "Debian 13"
+	TestComputerKernel  = "6.12.0"
+	TestComputerModel   = "ThinkPad T14"
+	TestComputerRAM     = "32GB"
+	TestComputerCPU     = "AMD Ryzen 7"
+	TestComputerStorage = "1TB NVMe"
+)
 
 // TestStoredComputerCreatedOn is a fixed timestamp for persisted-computer repository tests.
 const TestStoredComputerCreatedOn uint64 = 12345
@@ -29,10 +36,6 @@ const (
 	ListComputerIPFirst  = TestComputerIP
 	ListComputerIPSecond = "10.0.0.2"
 	ListComputerIPThird  = "172.16.0.3"
-
-	ListComputerRatingFirst  = 10
-	ListComputerRatingSecond = 20
-	ListComputerRatingThird  = 30
 )
 
 // ComputerBody is the create/update JSON payload for computer HTTP tests.
@@ -40,7 +43,12 @@ const (
 type ComputerBody struct {
 	Hostname string `json:"hostname"`
 	IP       string `json:"ip"`
-	Rating   int    `json:"rating"`
+	OS       string `json:"os"`
+	Kernel   string `json:"kernel"`
+	Model    string `json:"model"`
+	RAM      string `json:"ram"`
+	CPU      string `json:"cpu"`
+	Storage  string `json:"storage"`
 }
 
 // ValidComputerBody returns a ComputerBody with canonical valid field values.
@@ -48,7 +56,12 @@ func ValidComputerBody() ComputerBody {
 	return ComputerBody{
 		Hostname: TestComputerHostname,
 		IP:       TestComputerIP,
-		Rating:   TestComputerRating,
+		OS:       TestComputerOS,
+		Kernel:   TestComputerKernel,
+		Model:    TestComputerModel,
+		RAM:      TestComputerRAM,
+		CPU:      TestComputerCPU,
+		Storage:  TestComputerStorage,
 	}
 }
 
@@ -69,33 +82,37 @@ func ComputerWithID(body ComputerBody, createdOn uint64) (id string, b computer.
 		ID:        id,
 		Hostname:  body.Hostname,
 		IP:        body.IP,
-		Rating:    body.Rating,
+		OS:        body.OS,
+		Kernel:    body.Kernel,
+		Model:     body.Model,
+		RAM:       body.RAM,
+		CPU:       body.CPU,
+		Storage:   body.Storage,
 		CreatedOn: createdOn,
 	}
 	return
 }
 
+func listComputerFields(hostname, ip string) computer.Computer {
+	return computer.Computer{
+		ID:       uuid.NewString(),
+		Hostname: hostname,
+		IP:       ip,
+		OS:       TestComputerOS,
+		Kernel:   TestComputerKernel,
+		Model:    TestComputerModel,
+		RAM:      TestComputerRAM,
+		CPU:      TestComputerCPU,
+		Storage:  TestComputerStorage,
+	}
+}
+
 // ListComputers returns three distinct list fixtures.
 // When withTimestamps is true, CreatedOn is 1, 2, and 3.
 func ListComputers(withTimestamps bool) (first, second, third computer.Computer) {
-	first = computer.Computer{
-		ID:       uuid.NewString(),
-		Hostname: ListComputerHostnameFirst,
-		IP:       ListComputerIPFirst,
-		Rating:   ListComputerRatingFirst,
-	}
-	second = computer.Computer{
-		ID:       uuid.NewString(),
-		Hostname: ListComputerHostnameSecond,
-		IP:       ListComputerIPSecond,
-		Rating:   ListComputerRatingSecond,
-	}
-	third = computer.Computer{
-		ID:       uuid.NewString(),
-		Hostname: ListComputerHostnameThird,
-		IP:       ListComputerIPThird,
-		Rating:   ListComputerRatingThird,
-	}
+	first = listComputerFields(ListComputerHostnameFirst, ListComputerIPFirst)
+	second = listComputerFields(ListComputerHostnameSecond, ListComputerIPSecond)
+	third = listComputerFields(ListComputerHostnameThird, ListComputerIPThird)
 	if withTimestamps {
 		first.CreatedOn = 1
 		second.CreatedOn = 2

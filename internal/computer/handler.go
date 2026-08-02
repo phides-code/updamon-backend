@@ -73,7 +73,12 @@ func (h *Handler) getByID(ctx context.Context, id string) (events.APIGatewayProx
 type writePayload struct {
 	Hostname string `json:"hostname"`
 	IP       string `json:"ip"`
-	Rating   int    `json:"rating"`
+	OS       string `json:"os"`
+	Kernel   string `json:"kernel"`
+	Model    string `json:"model"`
+	RAM      string `json:"ram"`
+	CPU      string `json:"cpu"`
+	Storage  string `json:"storage"`
 }
 
 func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayProxyResponse, error) {
@@ -87,7 +92,12 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 	input := CreateInput{
 		Hostname: payload.Hostname,
 		IP:       payload.IP,
-		Rating:   payload.Rating,
+		OS:       payload.OS,
+		Kernel:   payload.Kernel,
+		Model:    payload.Model,
+		RAM:      payload.RAM,
+		CPU:      payload.CPU,
+		Storage:  payload.Storage,
 	}
 	if err := ValidateCreateInput(input); err != nil {
 		return h.errorResponse(ctx, err, op)
@@ -97,7 +107,12 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 		ID:        domain.NewID(),
 		Hostname:  payload.Hostname,
 		IP:        payload.IP,
-		Rating:    payload.Rating,
+		OS:        payload.OS,
+		Kernel:    payload.Kernel,
+		Model:     payload.Model,
+		RAM:       payload.RAM,
+		CPU:       payload.CPU,
+		Storage:   payload.Storage,
 		CreatedOn: uint64(time.Now().UnixMilli()),
 	}
 
@@ -125,7 +140,12 @@ func (h *Handler) update(ctx context.Context, id, body string) (events.APIGatewa
 		ID:       id,
 		Hostname: payload.Hostname,
 		IP:       payload.IP,
-		Rating:   payload.Rating,
+		OS:       payload.OS,
+		Kernel:   payload.Kernel,
+		Model:    payload.Model,
+		RAM:      payload.RAM,
+		CPU:      payload.CPU,
+		Storage:  payload.Storage,
 	}
 	if err := ValidateUpdateInput(input); err != nil {
 		return h.errorResponse(ctx, err, op)
@@ -135,7 +155,12 @@ func (h *Handler) update(ctx context.Context, id, body string) (events.APIGatewa
 		ID:       id,
 		Hostname: payload.Hostname,
 		IP:       payload.IP,
-		Rating:   payload.Rating,
+		OS:       payload.OS,
+		Kernel:   payload.Kernel,
+		Model:    payload.Model,
+		RAM:      payload.RAM,
+		CPU:      payload.CPU,
+		Storage:  payload.Storage,
 	})
 	if err != nil {
 		return h.errorResponse(ctx, err, op)

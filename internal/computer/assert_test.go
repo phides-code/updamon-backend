@@ -54,11 +54,16 @@ func assertComputerDataKeys(t *testing.T, envelope platform.APIResponse) {
 	// Expected JSON keys for a computer item (Attr* must stay aligned with Computer tags).
 	// Keep this list alphabetical so missing/extra keys are easy to spot.
 	want := []string{
+		computer.AttrCPU,
 		computer.AttrCreatedOn,
 		computer.AttrHostname,
 		computer.AttrID,
 		computer.AttrIP,
-		computer.AttrRating,
+		computer.AttrKernel,
+		computer.AttrModel,
+		computer.AttrOS,
+		computer.AttrRAM,
+		computer.AttrStorage,
 	}
 	if len(keys) != len(want) {
 		t.Fatalf("data has %d keys %v, want exactly %v", len(keys), maps.Keys(keys), want)

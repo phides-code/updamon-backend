@@ -26,9 +26,6 @@ func TestComputerHandlerCreate(t *testing.T) {
 		setupRepo    func() *mockComputerRepository
 		wantStatus   int
 		wantErrorMsg string
-		wantHostname string
-		wantIP       string
-		wantRating   int
 	}{
 		{
 			name: "success",
@@ -40,10 +37,7 @@ func TestComputerHandlerCreate(t *testing.T) {
 					},
 				}
 			},
-			wantStatus:   http.StatusCreated,
-			wantHostname: testutil.TestComputerHostname,
-			wantIP:       testutil.TestComputerIP,
-			wantRating:   testutil.TestComputerRating,
+			wantStatus: http.StatusCreated,
 		},
 		{
 			name: "repo failure",
@@ -90,28 +84,44 @@ func TestComputerHandlerCreate(t *testing.T) {
 				return
 			}
 
-			computer := decodeComputerData(t, envelope)
+			got := decodeComputerData(t, envelope)
 			assertComputerDataKeys(t, envelope)
 
-			if computer.Hostname != tt.wantHostname {
-				t.Fatalf("hostname = %q, want %q", computer.Hostname, tt.wantHostname)
+			want := testutil.ValidComputerBody()
+			if got.Hostname != want.Hostname {
+				t.Fatalf("hostname = %q, want %q", got.Hostname, want.Hostname)
 			}
-			if computer.IP != tt.wantIP {
-				t.Fatalf("ip = %q, want %q", computer.IP, tt.wantIP)
+			if got.IP != want.IP {
+				t.Fatalf("ip = %q, want %q", got.IP, want.IP)
 			}
-			if computer.Rating != tt.wantRating {
-				t.Fatalf("rating = %d, want %d", computer.Rating, tt.wantRating)
+			if got.OS != want.OS {
+				t.Fatalf("os = %q, want %q", got.OS, want.OS)
+			}
+			if got.Kernel != want.Kernel {
+				t.Fatalf("kernel = %q, want %q", got.Kernel, want.Kernel)
+			}
+			if got.Model != want.Model {
+				t.Fatalf("model = %q, want %q", got.Model, want.Model)
+			}
+			if got.RAM != want.RAM {
+				t.Fatalf("ram = %q, want %q", got.RAM, want.RAM)
+			}
+			if got.CPU != want.CPU {
+				t.Fatalf("cpu = %q, want %q", got.CPU, want.CPU)
+			}
+			if got.Storage != want.Storage {
+				t.Fatalf("storage = %q, want %q", got.Storage, want.Storage)
 			}
 
-			if err := domain.ValidateID(computer.ID); err != nil {
+			if err := domain.ValidateID(got.ID); err != nil {
 				t.Fatalf("expected generated uuid: %v", err)
 			}
-			if computer.CreatedOn == 0 {
+			if got.CreatedOn == 0 {
 				t.Fatal("expected createdOn in response")
 			}
 			now := uint64(time.Now().UnixMilli())
-			if computer.CreatedOn > now || now-computer.CreatedOn > 5000 {
-				t.Fatalf("createdOn = %d, expected within 5s of %d", computer.CreatedOn, now)
+			if got.CreatedOn > now || now-got.CreatedOn > 5000 {
+				t.Fatalf("createdOn = %d, expected within 5s of %d", got.CreatedOn, now)
 			}
 		})
 	}
@@ -373,22 +383,6 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			setupRepo:    panicComputerRepo,
 		},
 		{
-			name:         "POST rating below min",
-			method:       http.MethodPost,
-			body:         validationBodies.computerWithValueBelowMin,
-			wantStatus:   http.StatusBadRequest,
-			wantErrorMsg: domain.ErrValidationFailed.Error(),
-			setupRepo:    panicComputerRepo,
-		},
-		{
-			name:         "POST rating above max",
-			method:       http.MethodPost,
-			body:         validationBodies.computerWithValueAboveMax,
-			wantStatus:   http.StatusBadRequest,
-			wantErrorMsg: domain.ErrValidationFailed.Error(),
-			setupRepo:    panicComputerRepo,
-		},
-		{
 			name:         "POST invalid ip",
 			method:       http.MethodPost,
 			body:         validationBodies.computerWithInvalidIP,
@@ -593,24 +587,6 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			name:         "PUT hostname too long",
 			pathID:       validUuid,
 			body:         validationBodies.computerWithValueTooLong,
-			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
-			wantErrorMsg: domain.ErrValidationFailed.Error(),
-			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
-		},
-		{
-			name:         "PUT rating below min",
-			pathID:       validUuid,
-			body:         validationBodies.computerWithValueBelowMin,
-			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
-			wantErrorMsg: domain.ErrValidationFailed.Error(),
-			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
-		},
-		{
-			name:         "PUT rating above max",
-			pathID:       validUuid,
-			body:         validationBodies.computerWithValueAboveMax,
 			wantStatus:   http.StatusBadRequest,
 			wantComputer: nil,
 			wantErrorMsg: domain.ErrValidationFailed.Error(),

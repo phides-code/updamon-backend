@@ -72,7 +72,7 @@ Client-facing text is the sentinel’s `Error()` string (`domain/errors.go`), ma
 | `GET`    | `/computers`      | List all                                    |
 | `GET`    | `/computers/{id}` | Get by UUID                                 |
 | `POST`   | `/computers`      | Create (`id` and `createdOn` set by server) |
-| `PUT`    | `/computers/{id}` | Update `hostname`, `ip`, and `rating`       |
+| `PUT`    | `/computers/{id}` | Update client-writable fields               |
 | `DELETE` | `/computers/{id}` | Hard delete; returns the deleted item       |
 
 **Item** (list returns an array of the same shape):
@@ -82,18 +82,22 @@ Client-facing text is the sentinel’s `Error()` string (`domain/errors.go`), ma
     "id": "uuid",
     "hostname": "string",
     "ip": "192.168.1.10",
-    "rating": 50,
+    "os": "string",
+    "kernel": "string",
+    "model": "string",
+    "ram": "string",
+    "cpu": "string",
+    "storage": "string",
     "createdOn": 1717516800000
 }
 ```
 
-**Create / update body:** `{ "hostname": "string", "ip": "192.168.1.10", "rating": 0 }`
+**Create / update body:** `{ "hostname", "ip", "os", "kernel", "model", "ram", "cpu", "storage" }`
 
 **Validation**
 
-- `hostname`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
+- `hostname`, `os`, `kernel`, `model`, `ram`, `cpu`, `storage`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
 - `ip`: required dotted-quad IPv4 address (`domain.ValidateIPv4`)
-- `rating`: required integer 0–100 (`domain.DefaultMinInt`–`DefaultMaxInt`)
 - Path `{id}`: UUID, or 400 `invalid id`
 
 List scans the full table. DynamoDB pagination stays inside the repository; it is not exposed over HTTP.
@@ -121,7 +125,7 @@ Example: add `origin` to computer. Prefer TDD: failing test → smallest fix →
 | Step | File(s)                                  | Do this                                                                                                                                                                                                                                                                         |
 | ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | `internal/computer/computer_test.go`     | Extend local `validCreateInput` / `validUpdateInput`. Add a case that blanks (or otherwise breaks) the new field.                                                                                                                                                               |
-| 2    | `internal/computer/computer.go`          | Add the field on `Computer` with `json` + `dynamodbav` tags. If clients set it, add it to `CreateInput` / `UpdateInput` and validate (`domain.ValidateRequiredString` / `ValidateRequiredInt`, or custom). Server-owned fields are **not** on inputs — set them in the handler. |
+| 2    | `internal/computer/computer.go`          | Add the field on `Computer` with `json` + `dynamodbav` tags. If clients set it, add it to `CreateInput` / `UpdateInput` and validate (`domain.ValidateRequiredString` / `ValidateIPv4`, or custom). Server-owned fields are **not** on inputs — set them in the handler. |
 | 3    | `internal/testutil/computer_fixtures.go` | Add the field to `ComputerBody`, `ValidComputerBody`, `ComputerWithID`, and list fixtures if needed.                                                                                                                                                                            |
 | 4    | `internal/computer/fixtures_test.go`     | If the field is required on create/update, extend `newComputerValidationBodies` only when you need a new _shape_; reuse existing empty/whitespace/too-long fixtures when the rule matches hostname.                                                                             |
 | 5    | `internal/computer/dynamodb.go`          | Add `Attr…` constant. If PUT-updatable, add it to the Update `SET` / names / values maps (keep attribute names alphabetical).                                                                                                                                                   |

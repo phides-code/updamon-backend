@@ -14,12 +14,10 @@ import (
 // Names describe the invalidation shape (empty, whitespace, too long, …), not which
 // entity field was mutated — keeps find-replace and new fields simple.
 type computerValidationBodies struct {
-	computerWithEmptyValue    string
-	computerWithWhitespace    string
-	computerWithValueTooLong  string
-	computerWithValueBelowMin string
-	computerWithValueAboveMax string
-	computerWithInvalidIP     string
+	computerWithEmptyValue   string
+	computerWithWhitespace   string
+	computerWithValueTooLong string
+	computerWithInvalidIP    string
 }
 
 func newComputerValidationBodies(t *testing.T) computerValidationBodies {
@@ -34,22 +32,14 @@ func newComputerValidationBodies(t *testing.T) computerValidationBodies {
 	valueTooLong := testutil.ValidComputerBody()
 	valueTooLong.Hostname = strings.Repeat("a", domain.DefaultMaxStringLength+1)
 
-	valueBelowMin := testutil.ValidComputerBody()
-	valueBelowMin.Rating = domain.DefaultMinInt - 1
-
-	valueAboveMax := testutil.ValidComputerBody()
-	valueAboveMax.Rating = domain.DefaultMaxInt + 1
-
 	invalidIP := testutil.ValidComputerBody()
 	invalidIP.IP = "not-an-ip"
 
 	return computerValidationBodies{
-		computerWithEmptyValue:    emptyValue.JSON(t),
-		computerWithWhitespace:    whitespace.JSON(t),
-		computerWithValueTooLong:  valueTooLong.JSON(t),
-		computerWithValueBelowMin: valueBelowMin.JSON(t),
-		computerWithValueAboveMax: valueAboveMax.JSON(t),
-		computerWithInvalidIP:     invalidIP.JSON(t),
+		computerWithEmptyValue:   emptyValue.JSON(t),
+		computerWithWhitespace:   whitespace.JSON(t),
+		computerWithValueTooLong: valueTooLong.JSON(t),
+		computerWithInvalidIP:    invalidIP.JSON(t),
 	}
 }
 

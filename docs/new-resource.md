@@ -114,7 +114,7 @@ SAM API event **logical IDs** should match the HTTP verb (see computer events in
 
 | Package | Use for |
 | --- | --- |
-| `internal/domain` | Sentinels, `ValidateID`, `ValidateRequiredString` / `ValidateRequiredInt` |
+| `internal/domain` | Sentinels, `ValidateID`, `ValidateRequiredString` / `ValidateIPv4` |
 | `internal/gateway` | `Register(prefix, handler)`, auth gate |
 | `internal/platform` | Envelope, `ClientErrorResponse`, logger, CF token helpers |
 | `internal/testutil` | `RequireHandle`, `AssertAPIError`, `AssertWantErr`, `AssertUpdateSets`, `CFTokenHeaders` |

@@ -65,7 +65,12 @@ func dispatchComputerRepo() *mockComputerRepository {
 				ID:       gotID,
 				Hostname: testutil.TestComputerHostname,
 				IP:       testutil.TestComputerIP,
-				Rating:   testutil.TestComputerRating,
+				OS:       testutil.TestComputerOS,
+				Kernel:   testutil.TestComputerKernel,
+				Model:    testutil.TestComputerModel,
+				RAM:      testutil.TestComputerRAM,
+				CPU:      testutil.TestComputerCPU,
+				Storage:  testutil.TestComputerStorage,
 			}, nil
 		},
 		listFn: func(_ context.Context) ([]computer.Computer, error) {

@@ -6,20 +6,24 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/phides-code/updamon-backend/internal/computer"
-	"github.com/phides-code/updamon-backend/internal/domain"
 	"github.com/phides-code/updamon-backend/internal/testutil"
 )
 
+func validCreateInput() computer.CreateInput {
+	return computer.CreateInput{
+		Hostname: testutil.TestComputerHostname,
+		IP:       testutil.TestComputerIP,
+		OS:       testutil.TestComputerOS,
+		Kernel:   testutil.TestComputerKernel,
+		Model:    testutil.TestComputerModel,
+		RAM:      testutil.TestComputerRAM,
+		CPU:      testutil.TestComputerCPU,
+		Storage:  testutil.TestComputerStorage,
+	}
+}
+
 func TestValidateCreateInput(t *testing.T) {
 	t.Parallel()
-
-	validCreateInput := func() computer.CreateInput {
-		return computer.CreateInput{
-			Hostname: testutil.TestComputerHostname,
-			IP:       testutil.TestComputerIP,
-			Rating:   testutil.TestComputerRating,
-		}
-	}
 
 	tests := []struct {
 		name    string
@@ -64,19 +68,55 @@ func TestValidateCreateInput(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "rating below min",
+			name: "empty os",
 			input: func() computer.CreateInput {
 				in := validCreateInput()
-				in.Rating = domain.DefaultMinInt - 1
+				in.OS = ""
 				return in
 			}(),
 			wantErr: true,
 		},
 		{
-			name: "rating above max",
+			name: "empty kernel",
 			input: func() computer.CreateInput {
 				in := validCreateInput()
-				in.Rating = domain.DefaultMaxInt + 1
+				in.Kernel = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty model",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.Model = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty ram",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.RAM = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty cpu",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.CPU = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty storage",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.Storage = ""
 				return in
 			}(),
 			wantErr: true,
@@ -97,11 +137,17 @@ func TestValidateUpdateInput(t *testing.T) {
 	validID := uuid.NewString()
 
 	validUpdateInput := func() computer.UpdateInput {
+		in := validCreateInput()
 		return computer.UpdateInput{
 			ID:       validID,
-			Hostname: testutil.TestComputerHostname,
-			IP:       testutil.TestComputerIP,
-			Rating:   testutil.TestComputerRating,
+			Hostname: in.Hostname,
+			IP:       in.IP,
+			OS:       in.OS,
+			Kernel:   in.Kernel,
+			Model:    in.Model,
+			RAM:      in.RAM,
+			CPU:      in.CPU,
+			Storage:  in.Storage,
 		}
 	}
 
@@ -148,19 +194,10 @@ func TestValidateUpdateInput(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "rating below min",
+			name: "empty os",
 			input: func() computer.UpdateInput {
 				in := validUpdateInput()
-				in.Rating = domain.DefaultMinInt - 1
-				return in
-			}(),
-			wantErr: true,
-		},
-		{
-			name: "rating above max",
-			input: func() computer.UpdateInput {
-				in := validUpdateInput()
-				in.Rating = domain.DefaultMaxInt + 1
+				in.OS = ""
 				return in
 			}(),
 			wantErr: true,

@@ -18,7 +18,12 @@ const (
 	AttrID        = "id"
 	AttrHostname  = "hostname"
 	AttrIP        = "ip"
-	AttrRating    = "rating"
+	AttrOS        = "os"
+	AttrKernel    = "kernel"
+	AttrModel     = "model"
+	AttrRAM       = "ram"
+	AttrCPU       = "cpu"
+	AttrStorage   = "storage"
 	AttrCreatedOn = "createdOn"
 )
 
@@ -141,21 +146,41 @@ func (r *dynamoRepository) Update(ctx context.Context, computer Computer) (Compu
 		UpdateExpression: aws.String(fmt.Sprintf(
 			"SET #%s = :%s, "+
 				"#%s = :%s, "+
+				"#%s = :%s, "+
+				"#%s = :%s, "+
+				"#%s = :%s, "+
+				"#%s = :%s, "+
+				"#%s = :%s, "+
 				"#%s = :%s",
+			AttrCPU, AttrCPU,
 			AttrHostname, AttrHostname,
 			AttrIP, AttrIP,
-			AttrRating, AttrRating,
+			AttrKernel, AttrKernel,
+			AttrModel, AttrModel,
+			AttrOS, AttrOS,
+			AttrRAM, AttrRAM,
+			AttrStorage, AttrStorage,
 		)),
 		ConditionExpression: aws.String(ConditionIDExists),
 		ExpressionAttributeNames: map[string]string{
+			"#" + AttrCPU:      AttrCPU,
 			"#" + AttrHostname: AttrHostname,
 			"#" + AttrIP:       AttrIP,
-			"#" + AttrRating:   AttrRating,
+			"#" + AttrKernel:   AttrKernel,
+			"#" + AttrModel:    AttrModel,
+			"#" + AttrOS:       AttrOS,
+			"#" + AttrRAM:      AttrRAM,
+			"#" + AttrStorage:  AttrStorage,
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":" + AttrCPU:      &types.AttributeValueMemberS{Value: computer.CPU},
 			":" + AttrHostname: &types.AttributeValueMemberS{Value: computer.Hostname},
 			":" + AttrIP:       &types.AttributeValueMemberS{Value: computer.IP},
-			":" + AttrRating:   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", computer.Rating)},
+			":" + AttrKernel:   &types.AttributeValueMemberS{Value: computer.Kernel},
+			":" + AttrModel:    &types.AttributeValueMemberS{Value: computer.Model},
+			":" + AttrOS:       &types.AttributeValueMemberS{Value: computer.OS},
+			":" + AttrRAM:      &types.AttributeValueMemberS{Value: computer.RAM},
+			":" + AttrStorage:  &types.AttributeValueMemberS{Value: computer.Storage},
 		},
 		ReturnValues: types.ReturnValueAllNew,
 	})

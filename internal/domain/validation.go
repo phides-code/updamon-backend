@@ -13,12 +13,6 @@ const (
 	DefaultMaxStringLength = 100
 )
 
-// Default bounds for required integers unless a resource opts out.
-const (
-	DefaultMinInt = 0
-	DefaultMaxInt = 100
-)
-
 // ValidateRequiredString rejects blank values (after trim) and enforces rune length bounds.
 func ValidateRequiredString(s string, minLen, maxLen int) error {
 	if strings.TrimSpace(s) == "" {
@@ -26,14 +20,6 @@ func ValidateRequiredString(s string, minLen, maxLen int) error {
 	}
 	length := utf8.RuneCountInString(s)
 	if length < minLen || length > maxLen {
-		return ErrValidationFailed
-	}
-	return nil
-}
-
-// ValidateRequiredInt enforces inclusive integer bounds.
-func ValidateRequiredInt(n, min, max int) error {
-	if n < min || n > max {
 		return ErrValidationFailed
 	}
 	return nil
