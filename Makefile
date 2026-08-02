@@ -3,6 +3,7 @@
 COVERAGE_MIN_TOTAL ?= 69
 COVERAGE_MIN_GATEWAY ?= 85
 COVERAGE_MIN_BANANA ?= 85
+COVERAGE_MIN_SITREP ?= 85
 
 .PHONY: test
 test:
@@ -17,7 +18,10 @@ test:
 	computer=$$(go test ./internal/computer/ -cover 2>&1 | awk '/coverage:/ {gsub(/%/,""); print $$5}'); \
 	awk -v cov="$$computer" -v min=$(COVERAGE_MIN_BANANA) 'BEGIN { if (cov+0 < min+0) exit 1 }' || \
 		{ echo "computer coverage $$computer% < $(COVERAGE_MIN_BANANA)%"; exit 1; }; \
-	echo "coverage OK (total $$total%, gateway $$gateway%, computer $$computer%)"
+	sitrep=$$(go test ./internal/sitrep/ -cover 2>&1 | awk '/coverage:/ {gsub(/%/,""); print $$5}'); \
+	awk -v cov="$$sitrep" -v min=$(COVERAGE_MIN_SITREP) 'BEGIN { if (cov+0 < min+0) exit 1 }' || \
+		{ echo "sitrep coverage $$sitrep% < $(COVERAGE_MIN_SITREP)%"; exit 1; }; \
+	echo "coverage OK (total $$total%, gateway $$gateway%, computer $$computer%, sitrep $$sitrep%)"
 
 .PHONY: build
 build:

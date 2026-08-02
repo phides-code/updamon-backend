@@ -1,4 +1,4 @@
-# SAM template for API Gateway and the Go Lambda that serves /computers (and future paths).
+# SAM template for API Gateway and the Go Lambda that serves /computers, /sitreps (and future paths).
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
@@ -43,6 +43,8 @@ Resources:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
             TableName: !Ref UpdamonComputersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UpdamonSitrepsTable
       Events:
         ComputersOptions:
           Type: Api
@@ -90,6 +92,37 @@ Resources:
             Path: /computers/{id}
             Method: PUT
             RestApiId: !Ref UpdamonBackend
+
+        SitrepsOptions:
+          Type: Api
+          Properties:
+            Path: /sitreps
+            Method: OPTIONS
+            RestApiId: !Ref UpdamonBackend
+        SitrepsOptionsId:
+          Type: Api
+          Properties:
+            Path: /sitreps/{id}
+            Method: OPTIONS
+            RestApiId: !Ref UpdamonBackend
+        GetSitrep:
+          Type: Api
+          Properties:
+            Path: /sitreps/{id}
+            Method: GET
+            RestApiId: !Ref UpdamonBackend
+        GetSitreps:
+          Type: Api
+          Properties:
+            Path: /sitreps
+            Method: GET
+            RestApiId: !Ref UpdamonBackend
+        PostSitrep:
+          Type: Api
+          Properties:
+            Path: /sitreps
+            Method: POST
+            RestApiId: !Ref UpdamonBackend
             
     Metadata:
       BuildMethod: makefile
@@ -98,6 +131,20 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: UpdamonComputers
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  UpdamonSitrepsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UpdamonSitreps
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S

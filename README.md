@@ -14,6 +14,7 @@ The gateway authenticates, routes on the first path segment, and delegates. Each
 | ----------------------------------- | -------------------------------------------- |
 | Run tests / local API               | [Development](#development)                  |
 | Understand `/computers`             | [Computers](#computers-computers)            |
+| Understand `/sitreps`               | [Sitreps](#sitreps-sitreps)                  |
 | Add a field to an existing resource | [Adding a field](#adding-a-field)            |
 | Add a new table / URL prefix        | [docs/new-resource.md](docs/new-resource.md) |
 
@@ -23,11 +24,12 @@ The gateway authenticates, routes on the first path segment, and delegates. Each
 cmd/lambda/main.go       Lambda entry → app.Build
 internal/
   app/                   Composition root (wire repos + Register)
-  computer/                Reference vertical slice (copy this)
-  domain/                Shared errors, UUID rules, string/int validation
+  computer/              Reference vertical slice (copy this)
+  sitrep/                Sitrep vertical slice
+  domain/                Shared errors, UUID rules, string/IPv4 validation
   gateway/               Auth gate + first-segment routing
   platform/              Response envelope, error mapping, logging, CF token
-  testutil/              Shared test helpers and computer fixtures
+  testutil/              Shared test helpers and resource fixtures
 template.yml             SAM: API, Lambda, tables
 Makefile                 test, build, local, deploy
 ```
@@ -98,6 +100,33 @@ Client-facing text is the sentinel’s `Error()` string (`domain/errors.go`), ma
 
 - `hostname`, `os`, `kernel`, `model`, `ram`, `cpu`, `storage`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
 - `ip`: required dotted-quad IPv4 address (`domain.ValidateIPv4`)
+- Path `{id}`: UUID, or 400 `invalid id`
+
+List scans the full table. DynamoDB pagination stays inside the repository; it is not exposed over HTTP.
+
+### Sitreps (`/sitreps`)
+
+| Method   | Path             | Behavior                                    |
+| -------- | ---------------- | ------------------------------------------- |
+| `GET`    | `/sitreps`       | List all                                    |
+| `GET`    | `/sitreps/{id}`  | Get by UUID                                 |
+| `POST`   | `/sitreps`       | Create (`id` and `createdOn` set by server) |
+
+**Item** (list returns an array of the same shape):
+
+```json
+{
+    "id": "uuid",
+    "hostname": "string",
+    "createdOn": 1717516800000
+}
+```
+
+**Create body:** `{ "hostname": "string" }`
+
+**Validation**
+
+- `hostname`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
 - Path `{id}`: UUID, or 400 `invalid id`
 
 List scans the full table. DynamoDB pagination stays inside the repository; it is not exposed over HTTP.

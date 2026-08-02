@@ -10,6 +10,7 @@ import (
 	"github.com/phides-code/updamon-backend/internal/computer"
 	"github.com/phides-code/updamon-backend/internal/gateway"
 	"github.com/phides-code/updamon-backend/internal/platform"
+	"github.com/phides-code/updamon-backend/internal/sitrep"
 )
 
 func Build(ctx context.Context, logger *platform.Logger) (*gateway.Gateway, error) {
@@ -20,11 +21,13 @@ func Build(ctx context.Context, logger *platform.Logger) (*gateway.Gateway, erro
 
 	client := dynamodb.NewFromConfig(cfg)
 	computerRepo := computer.NewRepository(client)
-	return buildGateway(logger, computerRepo), nil
+	sitrepRepo := sitrep.NewRepository(client)
+	return buildGateway(logger, computerRepo, sitrepRepo), nil
 }
 
-func buildGateway(logger *platform.Logger, computerRepo computer.Repository) *gateway.Gateway {
+func buildGateway(logger *platform.Logger, computerRepo computer.Repository, sitrepRepo sitrep.Repository) *gateway.Gateway {
 	g := gateway.NewGateway(logger)
 	g.Register(computer.PathPrefix, computer.NewHandler(computerRepo, logger))
+	g.Register(sitrep.PathPrefix, sitrep.NewHandler(sitrepRepo, logger))
 	return g
 }

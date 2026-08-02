@@ -10,6 +10,7 @@ import (
 	"github.com/phides-code/updamon-backend/internal/computer"
 	"github.com/phides-code/updamon-backend/internal/gateway"
 	"github.com/phides-code/updamon-backend/internal/platform"
+	"github.com/phides-code/updamon-backend/internal/sitrep"
 	"github.com/phides-code/updamon-backend/internal/testutil"
 )
 
@@ -17,10 +18,14 @@ func TestWiringSmokeGETComputers(t *testing.T) {
 	assertWiringSmokeGET(t, testGateway(t), "/"+computer.PathPrefix)
 }
 
+func TestWiringSmokeGETSitreps(t *testing.T) {
+	assertWiringSmokeGET(t, testGateway(t), "/"+sitrep.PathPrefix)
+}
+
 func testGateway(t *testing.T) *gateway.Gateway {
 	t.Helper()
 	t.Setenv(platform.CFTTokenEnvVar, testutil.TestCFTToken)
-	return buildGateway(platform.NewLogger(), stubComputerRepo{})
+	return buildGateway(platform.NewLogger(), stubComputerRepo{}, stubSitrepRepo{})
 }
 
 func assertWiringSmokeGET(t *testing.T, g *gateway.Gateway, path string) {
