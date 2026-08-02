@@ -2,6 +2,7 @@
 package domain
 
 import (
+	"net"
 	"strings"
 	"unicode/utf8"
 )
@@ -33,6 +34,23 @@ func ValidateRequiredString(s string, minLen, maxLen int) error {
 // ValidateRequiredInt enforces inclusive integer bounds.
 func ValidateRequiredInt(n, min, max int) error {
 	if n < min || n > max {
+		return ErrValidationFailed
+	}
+	return nil
+}
+
+// ValidateIPv4 rejects blank values and anything that is not a dotted-quad IPv4 address.
+func ValidateIPv4(s string) error {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ErrValidationFailed
+	}
+	// Reject IPv4-mapped IPv6 forms that ParseIP would otherwise accept via To4.
+	if strings.Contains(s, ":") {
+		return ErrValidationFailed
+	}
+	ip := net.ParseIP(s)
+	if ip == nil || ip.To4() == nil {
 		return ErrValidationFailed
 	}
 	return nil

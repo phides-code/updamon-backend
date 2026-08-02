@@ -56,3 +56,28 @@ func TestValidateRequiredInt(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateIPv4(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		value   string
+		wantErr bool
+	}{
+		{name: "valid", value: "192.168.1.10", wantErr: false},
+		{name: "empty", value: "", wantErr: true},
+		{name: "whitespace", value: "   ", wantErr: true},
+		{name: "hostname", value: "example.com", wantErr: true},
+		{name: "ipv6", value: "2001:db8::1", wantErr: true},
+		{name: "ipv4 mapped ipv6", value: "::ffff:192.0.2.1", wantErr: true},
+		{name: "octet too large", value: "256.0.0.1", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			testutil.AssertWantErr(t, domain.ValidateIPv4(tt.value), tt.wantErr)
+		})
+	}
+}

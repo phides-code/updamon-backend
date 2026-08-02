@@ -19,19 +19,20 @@ type computerValidationBodies struct {
 	computerWithValueTooLong  string
 	computerWithValueBelowMin string
 	computerWithValueAboveMax string
+	computerWithInvalidIP     string
 }
 
 func newComputerValidationBodies(t *testing.T) computerValidationBodies {
 	t.Helper()
 
 	emptyValue := testutil.ValidComputerBody()
-	emptyValue.Descriptor = ""
+	emptyValue.Hostname = ""
 
 	whitespace := testutil.ValidComputerBody()
-	whitespace.Descriptor = "   "
+	whitespace.Hostname = "   "
 
 	valueTooLong := testutil.ValidComputerBody()
-	valueTooLong.Descriptor = strings.Repeat("a", domain.DefaultMaxStringLength+1)
+	valueTooLong.Hostname = strings.Repeat("a", domain.DefaultMaxStringLength+1)
 
 	valueBelowMin := testutil.ValidComputerBody()
 	valueBelowMin.Rating = domain.DefaultMinInt - 1
@@ -39,12 +40,16 @@ func newComputerValidationBodies(t *testing.T) computerValidationBodies {
 	valueAboveMax := testutil.ValidComputerBody()
 	valueAboveMax.Rating = domain.DefaultMaxInt + 1
 
+	invalidIP := testutil.ValidComputerBody()
+	invalidIP.IP = "not-an-ip"
+
 	return computerValidationBodies{
 		computerWithEmptyValue:    emptyValue.JSON(t),
 		computerWithWhitespace:    whitespace.JSON(t),
 		computerWithValueTooLong:  valueTooLong.JSON(t),
 		computerWithValueBelowMin: valueBelowMin.JSON(t),
 		computerWithValueAboveMax: valueAboveMax.JSON(t),
+		computerWithInvalidIP:     invalidIP.JSON(t),
 	}
 }
 

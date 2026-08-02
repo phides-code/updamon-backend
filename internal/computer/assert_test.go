@@ -55,8 +55,9 @@ func assertComputerDataKeys(t *testing.T, envelope platform.APIResponse) {
 	// Keep this list alphabetical so missing/extra keys are easy to spot.
 	want := []string{
 		computer.AttrCreatedOn,
-		computer.AttrDescriptor,
+		computer.AttrHostname,
 		computer.AttrID,
+		computer.AttrIP,
 		computer.AttrRating,
 	}
 	if len(keys) != len(want) {

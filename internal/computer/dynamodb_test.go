@@ -193,8 +193,9 @@ func TestComputerRepositoryUpdate(t *testing.T) {
 				return &mockDynamoClient{
 					updateItemFn: func(_ context.Context, params *awsdynamodb.UpdateItemInput, _ ...func(*awsdynamodb.Options)) (*awsdynamodb.UpdateItemOutput, error) {
 						testutil.AssertUpdateSets(t, params, map[string]any{
-							computer.AttrDescriptor: updatedComputer.Descriptor,
-							computer.AttrRating:     updatedComputer.Rating,
+							computer.AttrHostname: updatedComputer.Hostname,
+							computer.AttrIP:       updatedComputer.IP,
+							computer.AttrRating:   updatedComputer.Rating,
 						})
 						return &awsdynamodb.UpdateItemOutput{Attributes: item}, nil
 					},

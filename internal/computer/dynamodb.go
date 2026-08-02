@@ -15,10 +15,11 @@ import (
 
 // DynamoDB attribute names. Keep aligned with Computer json / dynamodbav tags.
 const (
-	AttrID         = "id"
-	AttrDescriptor = "descriptor"
-	AttrRating     = "rating"
-	AttrCreatedOn  = "createdOn"
+	AttrID        = "id"
+	AttrHostname  = "hostname"
+	AttrIP        = "ip"
+	AttrRating    = "rating"
+	AttrCreatedOn = "createdOn"
 )
 
 // Condition expressions on the partition key: create requires absence, update requires presence.
@@ -139,18 +140,22 @@ func (r *dynamoRepository) Update(ctx context.Context, computer Computer) (Compu
 		Key:       idKey(computer.ID),
 		UpdateExpression: aws.String(fmt.Sprintf(
 			"SET #%s = :%s, "+
+				"#%s = :%s, "+
 				"#%s = :%s",
-			AttrDescriptor, AttrDescriptor,
+			AttrHostname, AttrHostname,
+			AttrIP, AttrIP,
 			AttrRating, AttrRating,
 		)),
 		ConditionExpression: aws.String(ConditionIDExists),
 		ExpressionAttributeNames: map[string]string{
-			"#" + AttrDescriptor: AttrDescriptor,
-			"#" + AttrRating:     AttrRating,
+			"#" + AttrHostname: AttrHostname,
+			"#" + AttrIP:       AttrIP,
+			"#" + AttrRating:   AttrRating,
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":" + AttrDescriptor: &types.AttributeValueMemberS{Value: computer.Descriptor},
-			":" + AttrRating:     &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", computer.Rating)},
+			":" + AttrHostname: &types.AttributeValueMemberS{Value: computer.Hostname},
+			":" + AttrIP:       &types.AttributeValueMemberS{Value: computer.IP},
+			":" + AttrRating:   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", computer.Rating)},
 		},
 		ReturnValues: types.ReturnValueAllNew,
 	})

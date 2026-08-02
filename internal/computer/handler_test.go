@@ -21,13 +21,14 @@ func TestComputerHandlerCreate(t *testing.T) {
 	validCreateBody := testutil.ValidComputerBody().JSON(t)
 
 	tests := []struct {
-		name           string
-		body           string
-		setupRepo      func() *mockComputerRepository
-		wantStatus     int
-		wantErrorMsg   string
-		wantDescriptor string
-		wantRating     int
+		name         string
+		body         string
+		setupRepo    func() *mockComputerRepository
+		wantStatus   int
+		wantErrorMsg string
+		wantHostname string
+		wantIP       string
+		wantRating   int
 	}{
 		{
 			name: "success",
@@ -39,9 +40,10 @@ func TestComputerHandlerCreate(t *testing.T) {
 					},
 				}
 			},
-			wantStatus:     http.StatusCreated,
-			wantDescriptor: testutil.TestComputerDescriptor,
-			wantRating:     testutil.TestComputerRating,
+			wantStatus:   http.StatusCreated,
+			wantHostname: testutil.TestComputerHostname,
+			wantIP:       testutil.TestComputerIP,
+			wantRating:   testutil.TestComputerRating,
 		},
 		{
 			name: "repo failure",
@@ -91,8 +93,11 @@ func TestComputerHandlerCreate(t *testing.T) {
 			computer := decodeComputerData(t, envelope)
 			assertComputerDataKeys(t, envelope)
 
-			if computer.Descriptor != tt.wantDescriptor {
-				t.Fatalf("descriptor = %q, want %q", computer.Descriptor, tt.wantDescriptor)
+			if computer.Hostname != tt.wantHostname {
+				t.Fatalf("hostname = %q, want %q", computer.Hostname, tt.wantHostname)
+			}
+			if computer.IP != tt.wantIP {
+				t.Fatalf("ip = %q, want %q", computer.IP, tt.wantIP)
 			}
 			if computer.Rating != tt.wantRating {
 				t.Fatalf("rating = %d, want %d", computer.Rating, tt.wantRating)
@@ -337,7 +342,7 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			wantErrorMsg: domain.ErrInvalidJSON.Error(),
 		},
 		{
-			name:         "POST empty descriptor",
+			name:         "POST empty hostname",
 			method:       http.MethodPost,
 			body:         validationBodies.computerWithEmptyValue,
 			wantStatus:   http.StatusBadRequest,
@@ -352,7 +357,7 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			wantErrorMsg: domain.ErrMethodNotAllowed.Error(),
 		},
 		{
-			name:         "POST whitespace descriptor",
+			name:         "POST whitespace hostname",
 			method:       http.MethodPost,
 			body:         validationBodies.computerWithWhitespace,
 			wantStatus:   http.StatusBadRequest,
@@ -360,7 +365,7 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			setupRepo:    panicComputerRepo,
 		},
 		{
-			name:         "POST descriptor too long",
+			name:         "POST hostname too long",
 			method:       http.MethodPost,
 			body:         validationBodies.computerWithValueTooLong,
 			wantStatus:   http.StatusBadRequest,
@@ -379,6 +384,14 @@ func TestComputerHandlerClientErrors(t *testing.T) {
 			name:         "POST rating above max",
 			method:       http.MethodPost,
 			body:         validationBodies.computerWithValueAboveMax,
+			wantStatus:   http.StatusBadRequest,
+			wantErrorMsg: domain.ErrValidationFailed.Error(),
+			setupRepo:    panicComputerRepo,
+		},
+		{
+			name:         "POST invalid ip",
+			method:       http.MethodPost,
+			body:         validationBodies.computerWithInvalidIP,
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: domain.ErrValidationFailed.Error(),
 			setupRepo:    panicComputerRepo,
@@ -526,7 +539,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			},
 		},
 		{
-			name:         "PUT empty descriptor",
+			name:         "PUT empty hostname",
 			pathID:       validUuid,
 			body:         validationBodies.computerWithEmptyValue,
 			wantStatus:   http.StatusBadRequest,
@@ -568,7 +581,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			},
 		},
 		{
-			name:         "PUT whitespace descriptor",
+			name:         "PUT whitespace hostname",
 			pathID:       validUuid,
 			body:         validationBodies.computerWithWhitespace,
 			wantStatus:   http.StatusBadRequest,
@@ -577,7 +590,7 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},
 		{
-			name:         "PUT descriptor too long",
+			name:         "PUT hostname too long",
 			pathID:       validUuid,
 			body:         validationBodies.computerWithValueTooLong,
 			wantStatus:   http.StatusBadRequest,
@@ -599,7 +612,16 @@ func TestComputerHandlerUpdate(t *testing.T) {
 			pathID:       validUuid,
 			body:         validationBodies.computerWithValueAboveMax,
 			wantStatus:   http.StatusBadRequest,
-			wantComputer:   nil,
+			wantComputer: nil,
+			wantErrorMsg: domain.ErrValidationFailed.Error(),
+			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
+		},
+		{
+			name:         "PUT invalid ip",
+			pathID:       validUuid,
+			body:         validationBodies.computerWithInvalidIP,
+			wantStatus:   http.StatusBadRequest,
+			wantComputer: nil,
 			wantErrorMsg: domain.ErrValidationFailed.Error(),
 			setupRepo:    func(pathID string) *mockComputerRepository { return emptyComputerRepo() },
 		},

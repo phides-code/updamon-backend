@@ -9,8 +9,11 @@ import (
 	"github.com/phides-code/updamon-backend/internal/computer"
 )
 
-// TestComputerDescriptor is the canonical valid descriptor in handler and DynamoDB tests.
-const TestComputerDescriptor = "cavendish"
+// TestComputerHostname is the canonical valid hostname in handler and DynamoDB tests.
+const TestComputerHostname = "cavendish"
+
+// TestComputerIP is the canonical valid IPv4 address in handler and DynamoDB tests.
+const TestComputerIP = "192.168.1.10"
 
 // TestComputerRating is the canonical valid rating in handler and DynamoDB tests.
 const TestComputerRating = 50
@@ -19,9 +22,13 @@ const TestComputerRating = 50
 const TestStoredComputerCreatedOn uint64 = 12345
 
 const (
-	ListComputerDescriptorFirst  = TestComputerDescriptor
-	ListComputerDescriptorSecond = "plantain"
-	ListComputerDescriptorThird  = "burro"
+	ListComputerHostnameFirst  = TestComputerHostname
+	ListComputerHostnameSecond = "plantain"
+	ListComputerHostnameThird  = "burro"
+
+	ListComputerIPFirst  = TestComputerIP
+	ListComputerIPSecond = "10.0.0.2"
+	ListComputerIPThird  = "172.16.0.3"
 
 	ListComputerRatingFirst  = 10
 	ListComputerRatingSecond = 20
@@ -31,15 +38,17 @@ const (
 // ComputerBody is the create/update JSON payload for computer HTTP tests.
 // Kept separate from computer.Computer so json-tag drift fails tests instead of silently matching.
 type ComputerBody struct {
-	Descriptor string `json:"descriptor"`
-	Rating     int    `json:"rating"`
+	Hostname string `json:"hostname"`
+	IP       string `json:"ip"`
+	Rating   int    `json:"rating"`
 }
 
 // ValidComputerBody returns a ComputerBody with canonical valid field values.
 func ValidComputerBody() ComputerBody {
 	return ComputerBody{
-		Descriptor: TestComputerDescriptor,
-		Rating:     TestComputerRating,
+		Hostname: TestComputerHostname,
+		IP:       TestComputerIP,
+		Rating:   TestComputerRating,
 	}
 }
 
@@ -57,10 +66,11 @@ func (b ComputerBody) JSON(t *testing.T) string {
 func ComputerWithID(body ComputerBody, createdOn uint64) (id string, b computer.Computer) {
 	id = uuid.NewString()
 	b = computer.Computer{
-		ID:         id,
-		Descriptor: body.Descriptor,
-		Rating:     body.Rating,
-		CreatedOn:  createdOn,
+		ID:        id,
+		Hostname:  body.Hostname,
+		IP:        body.IP,
+		Rating:    body.Rating,
+		CreatedOn: createdOn,
 	}
 	return
 }
@@ -69,19 +79,22 @@ func ComputerWithID(body ComputerBody, createdOn uint64) (id string, b computer.
 // When withTimestamps is true, CreatedOn is 1, 2, and 3.
 func ListComputers(withTimestamps bool) (first, second, third computer.Computer) {
 	first = computer.Computer{
-		ID:         uuid.NewString(),
-		Descriptor: ListComputerDescriptorFirst,
-		Rating:     ListComputerRatingFirst,
+		ID:       uuid.NewString(),
+		Hostname: ListComputerHostnameFirst,
+		IP:       ListComputerIPFirst,
+		Rating:   ListComputerRatingFirst,
 	}
 	second = computer.Computer{
-		ID:         uuid.NewString(),
-		Descriptor: ListComputerDescriptorSecond,
-		Rating:     ListComputerRatingSecond,
+		ID:       uuid.NewString(),
+		Hostname: ListComputerHostnameSecond,
+		IP:       ListComputerIPSecond,
+		Rating:   ListComputerRatingSecond,
 	}
 	third = computer.Computer{
-		ID:         uuid.NewString(),
-		Descriptor: ListComputerDescriptorThird,
-		Rating:     ListComputerRatingThird,
+		ID:       uuid.NewString(),
+		Hostname: ListComputerHostnameThird,
+		IP:       ListComputerIPThird,
+		Rating:   ListComputerRatingThird,
 	}
 	if withTimestamps {
 		first.CreatedOn = 1

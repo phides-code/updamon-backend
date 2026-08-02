@@ -62,9 +62,10 @@ func dispatchComputerRepo() *mockComputerRepository {
 	return &mockComputerRepository{
 		getFn: func(_ context.Context, gotID string) (computer.Computer, error) {
 			return computer.Computer{
-				ID:         gotID,
-				Descriptor: testutil.TestComputerDescriptor,
-				Rating:     testutil.TestComputerRating,
+				ID:       gotID,
+				Hostname: testutil.TestComputerHostname,
+				IP:       testutil.TestComputerIP,
+				Rating:   testutil.TestComputerRating,
 			}, nil
 		},
 		listFn: func(_ context.Context) ([]computer.Computer, error) {

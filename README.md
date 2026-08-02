@@ -13,7 +13,7 @@ The gateway authenticates, routes on the first path segment, and delegates. Each
 | I want to…                          | Go here                                      |
 | ----------------------------------- | -------------------------------------------- |
 | Run tests / local API               | [Development](#development)                  |
-| Understand `/computers`               | [Computers](#computers-computers)                  |
+| Understand `/computers`             | [Computers](#computers-computers)            |
 | Add a field to an existing resource | [Adding a field](#adding-a-field)            |
 | Add a new table / URL prefix        | [docs/new-resource.md](docs/new-resource.md) |
 
@@ -67,12 +67,12 @@ Client-facing text is the sentinel’s `Error()` string (`domain/errors.go`), ma
 
 ### Computers (`/computers`)
 
-| Method   | Path            | Behavior                                    |
-| -------- | --------------- | ------------------------------------------- |
+| Method   | Path              | Behavior                                    |
+| -------- | ----------------- | ------------------------------------------- |
 | `GET`    | `/computers`      | List all                                    |
 | `GET`    | `/computers/{id}` | Get by UUID                                 |
 | `POST`   | `/computers`      | Create (`id` and `createdOn` set by server) |
-| `PUT`    | `/computers/{id}` | Update `descriptor` and `rating`            |
+| `PUT`    | `/computers/{id}` | Update `hostname`, `ip`, and `rating`       |
 | `DELETE` | `/computers/{id}` | Hard delete; returns the deleted item       |
 
 **Item** (list returns an array of the same shape):
@@ -80,17 +80,19 @@ Client-facing text is the sentinel’s `Error()` string (`domain/errors.go`), ma
 ```json
 {
     "id": "uuid",
-    "descriptor": "string",
+    "hostname": "string",
+    "ip": "192.168.1.10",
     "rating": 50,
     "createdOn": 1717516800000
 }
 ```
 
-**Create / update body:** `{ "descriptor": "string", "rating": 0 }`
+**Create / update body:** `{ "hostname": "string", "ip": "192.168.1.10", "rating": 0 }`
 
 **Validation**
 
-- `descriptor`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
+- `hostname`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
+- `ip`: required dotted-quad IPv4 address (`domain.ValidateIPv4`)
 - `rating`: required integer 0–100 (`domain.DefaultMinInt`–`DefaultMaxInt`)
 - Path `{id}`: UUID, or 400 `invalid id`
 
@@ -116,19 +118,19 @@ curl http://localhost:8000/computers
 
 Example: add `origin` to computer. Prefer TDD: failing test → smallest fix → green. Paths below use computer; substitute `<resource>` for another package.
 
-| Step | File(s) | Do this |
-| --- | --- | --- |
-| 1 | `internal/computer/computer_test.go` | Extend local `validCreateInput` / `validUpdateInput`. Add a case that blanks (or otherwise breaks) the new field. |
-| 2 | `internal/computer/computer.go` | Add the field on `Computer` with `json` + `dynamodbav` tags. If clients set it, add it to `CreateInput` / `UpdateInput` and validate (`domain.ValidateRequiredString` / `ValidateRequiredInt`, or custom). Server-owned fields are **not** on inputs — set them in the handler. |
-| 3 | `internal/testutil/computer_fixtures.go` | Add the field to `ComputerBody`, `ValidComputerBody`, `ComputerWithID`, and list fixtures if needed. |
-| 4 | `internal/computer/fixtures_test.go` | If the field is required on create/update, extend `newComputerValidationBodies` only when you need a new *shape*; reuse existing empty/whitespace/too-long fixtures when the rule matches descriptor. |
-| 5 | `internal/computer/dynamodb.go` | Add `Attr…` constant. If PUT-updatable, add it to the Update `SET` / names / values maps (keep attribute names alphabetical). |
-| 6 | `internal/computer/assert_test.go` | Add `Attr…` to the expected key list in `assertComputerDataKeys` (alphabetical). |
-| 7 | `internal/computer/handler_test.go` | Success create/update: assert the new field when it appears in the response. Client-error rows if validation can fail on this field. |
-| 8 | `internal/computer/handler.go` | Add the field to `writePayload`; copy into create/update inputs and the entity passed to the repo. |
-| 9 | `internal/computer/dynamodb_test.go` | If PUT-updatable: include the attr in the update success `AssertUpdateSets` map. Create/Get usually pick the field up via fixtures automatically. |
-| 10 | `internal/computer/mocks_test.go` | Only if a hand-built `Computer{…}` omits the new field and a test compares full structs. |
-| 11 | `README.md` | Update the computers item shape, create/update bodies, validation, and PUT behavior row. |
+| Step | File(s)                                  | Do this                                                                                                                                                                                                                                                                         |
+| ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `internal/computer/computer_test.go`     | Extend local `validCreateInput` / `validUpdateInput`. Add a case that blanks (or otherwise breaks) the new field.                                                                                                                                                               |
+| 2    | `internal/computer/computer.go`          | Add the field on `Computer` with `json` + `dynamodbav` tags. If clients set it, add it to `CreateInput` / `UpdateInput` and validate (`domain.ValidateRequiredString` / `ValidateRequiredInt`, or custom). Server-owned fields are **not** on inputs — set them in the handler. |
+| 3    | `internal/testutil/computer_fixtures.go` | Add the field to `ComputerBody`, `ValidComputerBody`, `ComputerWithID`, and list fixtures if needed.                                                                                                                                                                            |
+| 4    | `internal/computer/fixtures_test.go`     | If the field is required on create/update, extend `newComputerValidationBodies` only when you need a new _shape_; reuse existing empty/whitespace/too-long fixtures when the rule matches hostname.                                                                             |
+| 5    | `internal/computer/dynamodb.go`          | Add `Attr…` constant. If PUT-updatable, add it to the Update `SET` / names / values maps (keep attribute names alphabetical).                                                                                                                                                   |
+| 6    | `internal/computer/assert_test.go`       | Add `Attr…` to the expected key list in `assertComputerDataKeys` (alphabetical).                                                                                                                                                                                                |
+| 7    | `internal/computer/handler_test.go`      | Success create/update: assert the new field when it appears in the response. Client-error rows if validation can fail on this field.                                                                                                                                            |
+| 8    | `internal/computer/handler.go`           | Add the field to `writePayload`; copy into create/update inputs and the entity passed to the repo.                                                                                                                                                                              |
+| 9    | `internal/computer/dynamodb_test.go`     | If PUT-updatable: include the attr in the update success `AssertUpdateSets` map. Create/Get usually pick the field up via fixtures automatically.                                                                                                                               |
+| 10   | `internal/computer/mocks_test.go`        | Only if a hand-built `Computer{…}` omits the new field and a test compares full structs.                                                                                                                                                                                        |
+| 11   | `README.md`                              | Update the computers item shape, create/update bodies, validation, and PUT behavior row.                                                                                                                                                                                        |
 
 Skip DynamoDB Update changes (steps 5 and 9) for read-only or create-only fields. Run `make test` before opening a PR.
 

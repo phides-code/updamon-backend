@@ -71,8 +71,9 @@ func (h *Handler) getByID(ctx context.Context, id string) (events.APIGatewayProx
 }
 
 type writePayload struct {
-	Descriptor string `json:"descriptor"`
-	Rating     int    `json:"rating"`
+	Hostname string `json:"hostname"`
+	IP       string `json:"ip"`
+	Rating   int    `json:"rating"`
 }
 
 func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayProxyResponse, error) {
@@ -84,18 +85,20 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 	}
 
 	input := CreateInput{
-		Descriptor: payload.Descriptor,
-		Rating:     payload.Rating,
+		Hostname: payload.Hostname,
+		IP:       payload.IP,
+		Rating:   payload.Rating,
 	}
 	if err := ValidateCreateInput(input); err != nil {
 		return h.errorResponse(ctx, err, op)
 	}
 
 	computer := Computer{
-		ID:         domain.NewID(),
-		Descriptor: payload.Descriptor,
-		Rating:     payload.Rating,
-		CreatedOn:  uint64(time.Now().UnixMilli()),
+		ID:        domain.NewID(),
+		Hostname:  payload.Hostname,
+		IP:        payload.IP,
+		Rating:    payload.Rating,
+		CreatedOn: uint64(time.Now().UnixMilli()),
 	}
 
 	created, err := h.repo.Create(ctx, computer)
@@ -119,18 +122,20 @@ func (h *Handler) update(ctx context.Context, id, body string) (events.APIGatewa
 	}
 
 	input := UpdateInput{
-		ID:         id,
-		Descriptor: payload.Descriptor,
-		Rating:     payload.Rating,
+		ID:       id,
+		Hostname: payload.Hostname,
+		IP:       payload.IP,
+		Rating:   payload.Rating,
 	}
 	if err := ValidateUpdateInput(input); err != nil {
 		return h.errorResponse(ctx, err, op)
 	}
 
 	updated, err := h.repo.Update(ctx, Computer{
-		ID:         id,
-		Descriptor: payload.Descriptor,
-		Rating:     payload.Rating,
+		ID:       id,
+		Hostname: payload.Hostname,
+		IP:       payload.IP,
+		Rating:   payload.Rating,
 	})
 	if err != nil {
 		return h.errorResponse(ctx, err, op)

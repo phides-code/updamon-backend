@@ -10,25 +10,32 @@ const PathPrefix = "computers"
 const TableName = "UpdamonComputers"
 
 type Computer struct {
-	ID         string `json:"id" dynamodbav:"id"`
-	Descriptor string `json:"descriptor" dynamodbav:"descriptor"`
-	Rating     int    `json:"rating" dynamodbav:"rating"`
-	CreatedOn  uint64 `json:"createdOn" dynamodbav:"createdOn"`
+	ID        string `json:"id" dynamodbav:"id"`
+	Hostname  string `json:"hostname" dynamodbav:"hostname"`
+	IP        string `json:"ip" dynamodbav:"ip"`
+	Rating    int    `json:"rating" dynamodbav:"rating"`
+	CreatedOn uint64 `json:"createdOn" dynamodbav:"createdOn"`
 }
 
 type CreateInput struct {
-	Descriptor string
-	Rating     int
+	Hostname string
+	IP       string
+	Rating   int
 }
 
 type UpdateInput struct {
-	ID         string
-	Descriptor string
-	Rating     int
+	ID       string
+	Hostname string
+	IP       string
+	Rating   int
 }
 
-func validateDescriptor(descriptor string) error {
-	return domain.ValidateRequiredString(descriptor, domain.DefaultMinStringLength, domain.DefaultMaxStringLength)
+func validateHostname(hostname string) error {
+	return domain.ValidateRequiredString(hostname, domain.DefaultMinStringLength, domain.DefaultMaxStringLength)
+}
+
+func validateIP(ip string) error {
+	return domain.ValidateIPv4(ip)
 }
 
 func validateRating(rating int) error {
@@ -36,7 +43,10 @@ func validateRating(rating int) error {
 }
 
 func ValidateCreateInput(input CreateInput) error {
-	if err := validateDescriptor(input.Descriptor); err != nil {
+	if err := validateHostname(input.Hostname); err != nil {
+		return err
+	}
+	if err := validateIP(input.IP); err != nil {
 		return err
 	}
 	return validateRating(input.Rating)
@@ -46,7 +56,10 @@ func ValidateUpdateInput(input UpdateInput) error {
 	if err := domain.ValidateID(input.ID); err != nil {
 		return err
 	}
-	if err := validateDescriptor(input.Descriptor); err != nil {
+	if err := validateHostname(input.Hostname); err != nil {
+		return err
+	}
+	if err := validateIP(input.IP); err != nil {
 		return err
 	}
 	return validateRating(input.Rating)

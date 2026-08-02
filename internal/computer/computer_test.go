@@ -15,8 +15,9 @@ func TestValidateCreateInput(t *testing.T) {
 
 	validCreateInput := func() computer.CreateInput {
 		return computer.CreateInput{
-			Descriptor: testutil.TestComputerDescriptor,
-			Rating:     testutil.TestComputerRating,
+			Hostname: testutil.TestComputerHostname,
+			IP:       testutil.TestComputerIP,
+			Rating:   testutil.TestComputerRating,
 		}
 	}
 
@@ -27,10 +28,37 @@ func TestValidateCreateInput(t *testing.T) {
 	}{
 		{name: "valid", input: validCreateInput(), wantErr: false},
 		{
-			name: "empty descriptor",
+			name: "empty hostname",
 			input: func() computer.CreateInput {
 				in := validCreateInput()
-				in.Descriptor = ""
+				in.Hostname = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty ip",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.IP = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "invalid ip",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.IP = "not-an-ip"
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "ipv6 rejected",
+			input: func() computer.CreateInput {
+				in := validCreateInput()
+				in.IP = "2001:db8::1"
 				return in
 			}(),
 			wantErr: true,
@@ -70,9 +98,10 @@ func TestValidateUpdateInput(t *testing.T) {
 
 	validUpdateInput := func() computer.UpdateInput {
 		return computer.UpdateInput{
-			ID:         validID,
-			Descriptor: testutil.TestComputerDescriptor,
-			Rating:     testutil.TestComputerRating,
+			ID:       validID,
+			Hostname: testutil.TestComputerHostname,
+			IP:       testutil.TestComputerIP,
+			Rating:   testutil.TestComputerRating,
 		}
 	}
 
@@ -92,10 +121,28 @@ func TestValidateUpdateInput(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "empty descriptor",
+			name: "empty hostname",
 			input: func() computer.UpdateInput {
 				in := validUpdateInput()
-				in.Descriptor = ""
+				in.Hostname = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty ip",
+			input: func() computer.UpdateInput {
+				in := validUpdateInput()
+				in.IP = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "invalid ip",
+			input: func() computer.UpdateInput {
+				in := validUpdateInput()
+				in.IP = "not-an-ip"
 				return in
 			}(),
 			wantErr: true,
