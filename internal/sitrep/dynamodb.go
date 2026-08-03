@@ -18,6 +18,7 @@ const (
 	AttrID        = "id"
 	AttrHostname  = "hostname"
 	AttrAptLog    = "aptlog"
+	AttrLast      = "last"
 	AttrCreatedOn = "createdOn"
 )
 

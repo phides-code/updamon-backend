@@ -94,6 +94,9 @@ func TestSitrepHandlerCreate(t *testing.T) {
 			if got.AptLog != want.AptLog {
 				t.Fatalf("aptlog = %q, want %q", got.AptLog, want.AptLog)
 			}
+			if got.Last != want.Last {
+				t.Fatalf("last = %q, want %q", got.Last, want.Last)
+			}
 
 			if err := domain.ValidateID(got.ID); err != nil {
 				t.Fatalf("expected generated uuid: %v", err)

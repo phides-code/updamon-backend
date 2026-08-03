@@ -58,6 +58,7 @@ func assertSitrepDataKeys(t *testing.T, envelope platform.APIResponse) {
 		sitrep.AttrCreatedOn,
 		sitrep.AttrHostname,
 		sitrep.AttrID,
+		sitrep.AttrLast,
 	}
 	if len(keys) != len(want) {
 		t.Fatalf("data has %d keys %v, want exactly %v", len(keys), maps.Keys(keys), want)

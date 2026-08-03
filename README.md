@@ -119,16 +119,17 @@ List scans the full table. DynamoDB pagination stays inside the repository; it i
     "id": "uuid",
     "hostname": "string",
     "aptlog": "string",
+    "last": "string",
     "createdOn": 1717516800000
 }
 ```
 
-**Create body:** `{ "hostname": "string", "aptlog": "string" }`
+**Create body:** `{ "hostname": "string", "aptlog": "string", "last": "string" }`
 
 **Validation**
 
 - `hostname`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
-- `aptlog`: required, 1–10000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxLongStringLength`)
+- `aptlog`, `last`: required, 1–10000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxLongStringLength`)
 - Path `{id}`: UUID, or 400 `invalid id`
 
 List scans the full table. DynamoDB pagination stays inside the repository; it is not exposed over HTTP.

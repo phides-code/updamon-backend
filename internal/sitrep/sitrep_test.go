@@ -17,6 +17,7 @@ func TestValidateCreateInput(t *testing.T) {
 		return sitrep.CreateInput{
 			Hostname: testutil.TestSitrepHostname,
 			AptLog:   testutil.TestSitrepAptLog,
+			Last:     testutil.TestSitrepLast,
 		}
 	}
 
@@ -40,6 +41,15 @@ func TestValidateCreateInput(t *testing.T) {
 			input: func() sitrep.CreateInput {
 				in := validCreateInput()
 				in.AptLog = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty last",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.Last = ""
 				return in
 			}(),
 			wantErr: true,
