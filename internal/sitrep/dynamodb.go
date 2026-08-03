@@ -17,6 +17,7 @@ import (
 const (
 	AttrID        = "id"
 	AttrHostname  = "hostname"
+	AttrAptLog    = "aptlog"
 	AttrCreatedOn = "createdOn"
 )
 

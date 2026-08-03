@@ -2,8 +2,10 @@
 package sitrep_test
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/phides-code/updamon-backend/internal/domain"
 	"github.com/phides-code/updamon-backend/internal/sitrep"
 	"github.com/phides-code/updamon-backend/internal/testutil"
 )
@@ -14,6 +16,7 @@ func TestValidateCreateInput(t *testing.T) {
 	validCreateInput := func() sitrep.CreateInput {
 		return sitrep.CreateInput{
 			Hostname: testutil.TestSitrepHostname,
+			AptLog:   testutil.TestSitrepAptLog,
 		}
 	}
 
@@ -28,6 +31,33 @@ func TestValidateCreateInput(t *testing.T) {
 			input: func() sitrep.CreateInput {
 				in := validCreateInput()
 				in.Hostname = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty aptlog",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.AptLog = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "aptlog at max",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.AptLog = strings.Repeat("a", domain.DefaultMaxLongStringLength)
+				return in
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "aptlog too long",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.AptLog = strings.Repeat("a", domain.DefaultMaxLongStringLength+1)
 				return in
 			}(),
 			wantErr: true,

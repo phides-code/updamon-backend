@@ -47,6 +47,7 @@ func dispatchSitrepRepo() *mockSitrepRepository {
 			return sitrep.Sitrep{
 				ID:       gotID,
 				Hostname: testutil.TestSitrepHostname,
+				AptLog:   testutil.TestSitrepAptLog,
 			}, nil
 		},
 		listFn: func(_ context.Context) ([]sitrep.Sitrep, error) {

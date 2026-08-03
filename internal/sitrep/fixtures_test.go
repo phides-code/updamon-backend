@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/phides-code/updamon-backend/internal/sitrep"
 	"github.com/phides-code/updamon-backend/internal/domain"
+	"github.com/phides-code/updamon-backend/internal/sitrep"
 	"github.com/phides-code/updamon-backend/internal/testutil"
 )
 
@@ -28,8 +28,9 @@ func newSitrepValidationBodies(t *testing.T) sitrepValidationBodies {
 	whitespace := testutil.ValidSitrepBody()
 	whitespace.Hostname = "   "
 
+	// Long-string fields use DefaultMaxLongStringLength; exercise that bound for the too-long shape.
 	valueTooLong := testutil.ValidSitrepBody()
-	valueTooLong.Hostname = strings.Repeat("a", domain.DefaultMaxStringLength+1)
+	valueTooLong.AptLog = strings.Repeat("a", domain.DefaultMaxLongStringLength+1)
 
 	return sitrepValidationBodies{
 		sitrepWithEmptyValue:   emptyValue.JSON(t),

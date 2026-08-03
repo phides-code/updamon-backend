@@ -9,8 +9,9 @@ import (
 
 // Default rune length bounds for required strings unless a resource opts out.
 const (
-	DefaultMinStringLength = 1
-	DefaultMaxStringLength = 100
+	DefaultMinStringLength     = 1
+	DefaultMaxStringLength     = 100
+	DefaultMaxLongStringLength = 10000
 )
 
 // ValidateRequiredString rejects blank values (after trim) and enforces rune length bounds.

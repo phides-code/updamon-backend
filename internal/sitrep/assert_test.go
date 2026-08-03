@@ -54,6 +54,7 @@ func assertSitrepDataKeys(t *testing.T, envelope platform.APIResponse) {
 	// Expected JSON keys for a sitrep item (Attr* must stay aligned with Sitrep tags).
 	// Keep this list alphabetical so missing/extra keys are easy to spot.
 	want := []string{
+		sitrep.AttrAptLog,
 		sitrep.AttrCreatedOn,
 		sitrep.AttrHostname,
 		sitrep.AttrID,

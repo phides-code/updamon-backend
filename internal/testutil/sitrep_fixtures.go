@@ -12,6 +12,9 @@ import (
 // TestSitrepHostname is the canonical valid hostname in handler and DynamoDB tests.
 const TestSitrepHostname = "cavendish"
 
+// TestSitrepAptLog is the canonical valid aptlog in handler and DynamoDB tests.
+const TestSitrepAptLog = "Start-Date: 2026-08-02 12:00:00+0000\nCommandline: apt upgrade"
+
 // TestStoredSitrepCreatedOn is a fixed timestamp for persisted-sitrep repository tests.
 const TestStoredSitrepCreatedOn uint64 = 12345
 
@@ -21,16 +24,18 @@ const (
 	ListSitrepHostnameThird  = "burro"
 )
 
-// SitrepBody is the create/update JSON payload for sitrep HTTP tests.
+// SitrepBody is the create JSON payload for sitrep HTTP tests.
 // Kept separate from sitrep.Sitrep so json-tag drift fails tests instead of silently matching.
 type SitrepBody struct {
 	Hostname string `json:"hostname"`
+	AptLog   string `json:"aptlog"`
 }
 
 // ValidSitrepBody returns a SitrepBody with canonical valid field values.
 func ValidSitrepBody() SitrepBody {
 	return SitrepBody{
 		Hostname: TestSitrepHostname,
+		AptLog:   TestSitrepAptLog,
 	}
 }
 
@@ -50,6 +55,7 @@ func SitrepWithID(body SitrepBody, createdOn uint64) (id string, s sitrep.Sitrep
 	s = sitrep.Sitrep{
 		ID:        id,
 		Hostname:  body.Hostname,
+		AptLog:    body.AptLog,
 		CreatedOn: createdOn,
 	}
 	return
@@ -61,14 +67,17 @@ func ListSitreps(withTimestamps bool) (first, second, third sitrep.Sitrep) {
 	first = sitrep.Sitrep{
 		ID:       uuid.NewString(),
 		Hostname: ListSitrepHostnameFirst,
+		AptLog:   TestSitrepAptLog,
 	}
 	second = sitrep.Sitrep{
 		ID:       uuid.NewString(),
 		Hostname: ListSitrepHostnameSecond,
+		AptLog:   TestSitrepAptLog,
 	}
 	third = sitrep.Sitrep{
 		ID:       uuid.NewString(),
 		Hostname: ListSitrepHostnameThird,
+		AptLog:   TestSitrepAptLog,
 	}
 	if withTimestamps {
 		first.CreatedOn = 1

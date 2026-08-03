@@ -91,6 +91,9 @@ func TestSitrepHandlerCreate(t *testing.T) {
 			if got.Hostname != want.Hostname {
 				t.Fatalf("hostname = %q, want %q", got.Hostname, want.Hostname)
 			}
+			if got.AptLog != want.AptLog {
+				t.Fatalf("aptlog = %q, want %q", got.AptLog, want.AptLog)
+			}
 
 			if err := domain.ValidateID(got.ID); err != nil {
 				t.Fatalf("expected generated uuid: %v", err)
@@ -254,7 +257,7 @@ func TestSitrepHandlerClientErrors(t *testing.T) {
 			setupRepo:    panicSitrepRepo,
 		},
 		{
-			name:         "POST hostname too long",
+			name:         "POST aptlog too long",
 			method:       http.MethodPost,
 			body:         validationBodies.sitrepWithValueTooLong,
 			wantStatus:   http.StatusBadRequest,

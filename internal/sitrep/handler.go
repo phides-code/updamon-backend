@@ -68,6 +68,7 @@ func (h *Handler) getByID(ctx context.Context, id string) (events.APIGatewayProx
 
 type writePayload struct {
 	Hostname string `json:"hostname"`
+	AptLog   string `json:"aptlog"`
 }
 
 func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayProxyResponse, error) {
@@ -80,6 +81,7 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 
 	input := CreateInput{
 		Hostname: payload.Hostname,
+		AptLog:   payload.AptLog,
 	}
 	if err := ValidateCreateInput(input); err != nil {
 		return h.errorResponse(ctx, err, op)
@@ -88,6 +90,7 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 	item := Sitrep{
 		ID:        domain.NewID(),
 		Hostname:  payload.Hostname,
+		AptLog:    payload.AptLog,
 		CreatedOn: uint64(time.Now().UnixMilli()),
 	}
 
