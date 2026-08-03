@@ -1,4 +1,4 @@
-// Unit tests for shared string and IPv4 validation helpers.
+// Unit tests for shared string, IPv4, and MAC validation helpers.
 package domain_test
 
 import (
@@ -54,6 +54,31 @@ func TestValidateIPv4(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			testutil.AssertWantErr(t, domain.ValidateIPv4(tt.value), tt.wantErr)
+		})
+	}
+}
+
+func TestValidateMAC(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		value   string
+		wantErr bool
+	}{
+		{name: "colon separated", value: "cc:f4:11:32:cb:ff", wantErr: false},
+		{name: "hyphen separated", value: "cc-f4-11-32-cb-ff", wantErr: false},
+		{name: "dot separated", value: "ccf4.1132.cbff", wantErr: false},
+		{name: "empty", value: "", wantErr: true},
+		{name: "whitespace", value: "   ", wantErr: true},
+		{name: "not a mac", value: "not-a-mac", wantErr: true},
+		{name: "eui64 rejected", value: "00:11:22:33:44:55:66:77", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			testutil.AssertWantErr(t, domain.ValidateMAC(tt.value), tt.wantErr)
 		})
 	}
 }

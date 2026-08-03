@@ -120,15 +120,37 @@ List scans the full table. DynamoDB pagination stays inside the repository; it i
     "hostname": "string",
     "aptlog": "string",
     "last": "string",
+    "wap": "string",
+    "free": "string",
+    "df": "string",
+    "who": "string",
+    "tailscale": "string",
+    "bluetooth": "string",
     "createdOn": 1717516800000
 }
 ```
 
-**Create body:** `{ "hostname": "string", "aptlog": "string", "last": "string" }`
+**Create body:**
+
+```json
+{
+    "hostname": "string",
+    "aptlog": "string",
+    "last": "string",
+    "wap": "string",
+    "free": "string",
+    "df": "string",
+    "who": "string",
+    "tailscale": "string",
+    "bluetooth": "string"
+}
+```
 
 **Validation**
 
-- `hostname`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
+- `hostname`, `tailscale`, `bluetooth`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
+- `wap`: required 48-bit MAC address (`domain.ValidateMAC`)
+- `free`, `df`, `who`: required, 1–1000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxMediumStringLength`)
 - `aptlog`, `last`: required, 1–10000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxLongStringLength`)
 - Path `{id}`: UUID, or 400 `invalid id`
 

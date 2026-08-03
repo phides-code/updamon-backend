@@ -55,10 +55,16 @@ func assertSitrepDataKeys(t *testing.T, envelope platform.APIResponse) {
 	// Keep this list alphabetical so missing/extra keys are easy to spot.
 	want := []string{
 		sitrep.AttrAptLog,
+		sitrep.AttrBluetooth,
 		sitrep.AttrCreatedOn,
+		sitrep.AttrDF,
+		sitrep.AttrFree,
 		sitrep.AttrHostname,
 		sitrep.AttrID,
 		sitrep.AttrLast,
+		sitrep.AttrTailscale,
+		sitrep.AttrWAP,
+		sitrep.AttrWho,
 	}
 	if len(keys) != len(want) {
 		t.Fatalf("data has %d keys %v, want exactly %v", len(keys), maps.Keys(keys), want)

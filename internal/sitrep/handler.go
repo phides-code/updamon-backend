@@ -67,9 +67,15 @@ func (h *Handler) getByID(ctx context.Context, id string) (events.APIGatewayProx
 }
 
 type writePayload struct {
-	Hostname string `json:"hostname"`
-	AptLog   string `json:"aptlog"`
-	Last     string `json:"last"`
+	Hostname  string `json:"hostname"`
+	AptLog    string `json:"aptlog"`
+	Last      string `json:"last"`
+	WAP       string `json:"wap"`
+	Free      string `json:"free"`
+	DF        string `json:"df"`
+	Who       string `json:"who"`
+	Tailscale string `json:"tailscale"`
+	Bluetooth string `json:"bluetooth"`
 }
 
 func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayProxyResponse, error) {
@@ -81,9 +87,15 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 	}
 
 	input := CreateInput{
-		Hostname: payload.Hostname,
-		AptLog:   payload.AptLog,
-		Last:     payload.Last,
+		Hostname:  payload.Hostname,
+		AptLog:    payload.AptLog,
+		Last:      payload.Last,
+		WAP:       payload.WAP,
+		Free:      payload.Free,
+		DF:        payload.DF,
+		Who:       payload.Who,
+		Tailscale: payload.Tailscale,
+		Bluetooth: payload.Bluetooth,
 	}
 	if err := ValidateCreateInput(input); err != nil {
 		return h.errorResponse(ctx, err, op)
@@ -94,6 +106,12 @@ func (h *Handler) create(ctx context.Context, body string) (events.APIGatewayPro
 		Hostname:  payload.Hostname,
 		AptLog:    payload.AptLog,
 		Last:      payload.Last,
+		WAP:       payload.WAP,
+		Free:      payload.Free,
+		DF:        payload.DF,
+		Who:       payload.Who,
+		Tailscale: payload.Tailscale,
+		Bluetooth: payload.Bluetooth,
 		CreatedOn: uint64(time.Now().UnixMilli()),
 	}
 

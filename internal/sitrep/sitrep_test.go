@@ -15,9 +15,15 @@ func TestValidateCreateInput(t *testing.T) {
 
 	validCreateInput := func() sitrep.CreateInput {
 		return sitrep.CreateInput{
-			Hostname: testutil.TestSitrepHostname,
-			AptLog:   testutil.TestSitrepAptLog,
-			Last:     testutil.TestSitrepLast,
+			Hostname:  testutil.TestSitrepHostname,
+			AptLog:    testutil.TestSitrepAptLog,
+			Last:      testutil.TestSitrepLast,
+			WAP:       testutil.TestSitrepWAP,
+			Free:      testutil.TestSitrepFree,
+			DF:        testutil.TestSitrepDF,
+			Who:       testutil.TestSitrepWho,
+			Tailscale: testutil.TestSitrepTailscale,
+			Bluetooth: testutil.TestSitrepBluetooth,
 		}
 	}
 
@@ -50,6 +56,69 @@ func TestValidateCreateInput(t *testing.T) {
 			input: func() sitrep.CreateInput {
 				in := validCreateInput()
 				in.Last = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty wap",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.WAP = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "invalid wap",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.WAP = "not-a-mac"
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty free",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.Free = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty df",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.DF = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty who",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.Who = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty tailscale",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.Tailscale = ""
+				return in
+			}(),
+			wantErr: true,
+		},
+		{
+			name: "empty bluetooth",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.Bluetooth = ""
 				return in
 			}(),
 			wantErr: true,

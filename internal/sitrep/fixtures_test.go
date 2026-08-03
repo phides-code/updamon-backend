@@ -17,6 +17,7 @@ type sitrepValidationBodies struct {
 	sitrepWithEmptyValue   string
 	sitrepWithWhitespace   string
 	sitrepWithValueTooLong string
+	sitrepWithInvalidMAC   string
 }
 
 func newSitrepValidationBodies(t *testing.T) sitrepValidationBodies {
@@ -32,10 +33,14 @@ func newSitrepValidationBodies(t *testing.T) sitrepValidationBodies {
 	valueTooLong := testutil.ValidSitrepBody()
 	valueTooLong.AptLog = strings.Repeat("a", domain.DefaultMaxLongStringLength+1)
 
+	invalidMAC := testutil.ValidSitrepBody()
+	invalidMAC.WAP = "not-a-mac"
+
 	return sitrepValidationBodies{
 		sitrepWithEmptyValue:   emptyValue.JSON(t),
 		sitrepWithWhitespace:   whitespace.JSON(t),
 		sitrepWithValueTooLong: valueTooLong.JSON(t),
+		sitrepWithInvalidMAC:   invalidMAC.JSON(t),
 	}
 }
 

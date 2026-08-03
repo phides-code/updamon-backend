@@ -9,9 +9,10 @@ import (
 
 // Default rune length bounds for required strings unless a resource opts out.
 const (
-	DefaultMinStringLength     = 1
-	DefaultMaxStringLength     = 100
-	DefaultMaxLongStringLength = 10000
+	DefaultMinStringLength       = 1
+	DefaultMaxStringLength       = 100
+	DefaultMaxMediumStringLength = 1000
+	DefaultMaxLongStringLength   = 10000
 )
 
 // ValidateRequiredString rejects blank values (after trim) and enforces rune length bounds.
@@ -38,6 +39,19 @@ func ValidateIPv4(s string) error {
 	}
 	ip := net.ParseIP(s)
 	if ip == nil || ip.To4() == nil {
+		return ErrValidationFailed
+	}
+	return nil
+}
+
+// ValidateMAC rejects blank values and anything that is not a 48-bit MAC address.
+func ValidateMAC(s string) error {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ErrValidationFailed
+	}
+	hw, err := net.ParseMAC(s)
+	if err != nil || len(hw) != 6 {
 		return ErrValidationFailed
 	}
 	return nil

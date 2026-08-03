@@ -97,6 +97,24 @@ func TestSitrepHandlerCreate(t *testing.T) {
 			if got.Last != want.Last {
 				t.Fatalf("last = %q, want %q", got.Last, want.Last)
 			}
+			if got.WAP != want.WAP {
+				t.Fatalf("wap = %q, want %q", got.WAP, want.WAP)
+			}
+			if got.Free != want.Free {
+				t.Fatalf("free = %q, want %q", got.Free, want.Free)
+			}
+			if got.DF != want.DF {
+				t.Fatalf("df = %q, want %q", got.DF, want.DF)
+			}
+			if got.Who != want.Who {
+				t.Fatalf("who = %q, want %q", got.Who, want.Who)
+			}
+			if got.Tailscale != want.Tailscale {
+				t.Fatalf("tailscale = %q, want %q", got.Tailscale, want.Tailscale)
+			}
+			if got.Bluetooth != want.Bluetooth {
+				t.Fatalf("bluetooth = %q, want %q", got.Bluetooth, want.Bluetooth)
+			}
 
 			if err := domain.ValidateID(got.ID); err != nil {
 				t.Fatalf("expected generated uuid: %v", err)
@@ -263,6 +281,14 @@ func TestSitrepHandlerClientErrors(t *testing.T) {
 			name:         "POST aptlog too long",
 			method:       http.MethodPost,
 			body:         validationBodies.sitrepWithValueTooLong,
+			wantStatus:   http.StatusBadRequest,
+			wantErrorMsg: domain.ErrValidationFailed.Error(),
+			setupRepo:    panicSitrepRepo,
+		},
+		{
+			name:         "POST invalid wap",
+			method:       http.MethodPost,
+			body:         validationBodies.sitrepWithInvalidMAC,
 			wantStatus:   http.StatusBadRequest,
 			wantErrorMsg: domain.ErrValidationFailed.Error(),
 			setupRepo:    panicSitrepRepo,

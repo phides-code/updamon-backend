@@ -19,6 +19,12 @@ const (
 	AttrHostname  = "hostname"
 	AttrAptLog    = "aptlog"
 	AttrLast      = "last"
+	AttrWAP       = "wap"
+	AttrFree      = "free"
+	AttrDF        = "df"
+	AttrWho       = "who"
+	AttrTailscale = "tailscale"
+	AttrBluetooth = "bluetooth"
 	AttrCreatedOn = "createdOn"
 )
 
