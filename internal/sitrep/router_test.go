@@ -31,12 +31,12 @@ func TestGatewayRoutesSitreps(t *testing.T) {
 		HTTPMethod:     http.MethodGet,
 		Path:           "/" + sitrep.PathPrefix + "/" + id,
 		PathParameters: map[string]string{sitrep.AttrID: id},
-		Headers:        testutil.CFTokenHeaders(testutil.TestCFTToken),
+		Headers:        testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey),
 	})
 	testutil.RequireHandle(t, resp, err, http.StatusOK)
 }
 
-func TestGatewaySkipsCFTTokenUnderSAMLocal(t *testing.T) {
+func TestGatewaySkipsCFTokenButRequiresAdminKeyUnderSAMLocal(t *testing.T) {
 	t.Setenv(platform.SAMLocalEnvVar, "true")
 
 	id := uuid.NewString()
@@ -46,6 +46,7 @@ func TestGatewaySkipsCFTTokenUnderSAMLocal(t *testing.T) {
 		HTTPMethod:     http.MethodGet,
 		Path:           "/" + sitrep.PathPrefix + "/" + id,
 		PathParameters: map[string]string{sitrep.AttrID: id},
+		Headers:        testutil.AdminKeyHeaders(testutil.TestAdminKey),
 	})
 	testutil.RequireHandle(t, resp, err, http.StatusOK)
 }

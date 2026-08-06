@@ -1,4 +1,4 @@
-// Unit tests for gateway routing and X-CF-Token auth gate.
+// Unit tests for gateway routing and X-CF-Token / Admin Key auth gate.
 package gateway_test
 
 import (

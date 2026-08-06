@@ -25,6 +25,7 @@ func TestWiringSmokeGETSitreps(t *testing.T) {
 func testGateway(t *testing.T) *gateway.Gateway {
 	t.Helper()
 	t.Setenv(platform.CFTTokenEnvVar, testutil.TestCFTToken)
+	t.Setenv(platform.AdminKeyEnvVar, testutil.TestAdminKey)
 	return buildGateway(platform.NewLogger(), stubComputerRepo{}, stubSitrepRepo{})
 }
 
@@ -34,7 +35,7 @@ func assertWiringSmokeGET(t *testing.T, g *gateway.Gateway, path string) {
 	resp, err := g.Handle(context.Background(), events.APIGatewayProxyRequest{
 		HTTPMethod: http.MethodGet,
 		Path:       path,
-		Headers:    testutil.CFTokenHeaders(testutil.TestCFTToken),
+		Headers:    testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey),
 	})
 	if err != nil {
 		t.Fatalf("handle: %v", err)
