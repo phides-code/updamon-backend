@@ -7,6 +7,10 @@ Parameters:
     Type: String
     NoEcho: true
     Description: Token for API auth; set via --parameter-overrides AwsCfToken=xxx when deploying
+  AdminKey:
+    Type: String
+    NoEcho: true
+    Description: Token for API auth; set via --parameter-overrides AdminKey=xxx when deploying
 
 Resources:
   UpdamonBackend:
@@ -38,7 +42,8 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
-          AWS_CF_TOKEN: !Ref AwsCfToken  # comes from --parameter-overrides
+          AWS_CF_TOKEN: !Ref AwsCfToken
+          ADMIN_KEY: !Ref AdminKey
       Policies:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:

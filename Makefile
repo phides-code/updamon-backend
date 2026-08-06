@@ -28,7 +28,7 @@ build:
 	sam build
 
 local: build
-	sam local start-api --port 8000
+	sam local start-api --port 8000 --env-vars env.json
 
 build-UpdamonBackendFunction:
 	GOOS=linux CGO_ENABLED=0 go build -tags lambda.norpc -o $(ARTIFACTS_DIR)/bootstrap ./cmd/lambda
@@ -39,7 +39,7 @@ init: build
 
 .PHONY: deploy
 deploy: build
-	sam deploy --parameter-overrides AwsCfToken="$(AWS_CF_TOKEN)"
+	sam deploy --parameter-overrides AwsCfToken="$(AWS_CF_TOKEN)" AdminKey="$(ADMIN_KEY)"
 
 .PHONY: delete
 delete:
