@@ -18,17 +18,19 @@ type ResourceHandler interface {
 type Gateway struct {
 	logger   *platform.Logger
 	cfToken  string
+	adminKey string
 	handlers map[string]ResourceHandler
 }
 
 func NewGateway(logger *platform.Logger) *Gateway {
-	return NewGatewayWithCFTToken(logger, platform.ExpectedCFTToken())
+	return NewGatewayWithAuth(logger, platform.ExpectedCFTToken(), platform.ExpectedAdminKey())
 }
 
-func NewGatewayWithCFTToken(logger *platform.Logger, cfToken string) *Gateway {
+func NewGatewayWithAuth(logger *platform.Logger, cfToken string, adminKey string) *Gateway {
 	return &Gateway{
 		logger:   logger,
 		cfToken:  cfToken,
+		adminKey: adminKey,
 		handlers: make(map[string]ResourceHandler),
 	}
 }
@@ -38,10 +40,13 @@ func (g *Gateway) Register(prefix string, handler ResourceHandler) {
 }
 
 func (g *Gateway) Handle(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if req.HTTPMethod != http.MethodOptions &&
-		!platform.LocalMode() &&
-		!platform.ValidCFTToken(g.cfToken, req.Headers) {
-		return platform.ClientErrorResponse(domain.ErrUnauthorized)
+	if req.HTTPMethod != http.MethodOptions {
+		if !platform.LocalMode() && !platform.ValidCFTToken(g.cfToken, req.Headers) {
+			return platform.ClientErrorResponse(domain.ErrUnauthorized)
+		}
+		if !platform.ValidAdminKey(g.adminKey, req.Headers) {
+			return platform.ClientErrorResponse(domain.ErrUnauthorized)
+		}
 	}
 
 	logger := g.logger.WithRequestID(req.RequestContext.RequestID)

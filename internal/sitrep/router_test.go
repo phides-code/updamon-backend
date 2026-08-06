@@ -8,15 +8,15 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
-	"github.com/phides-code/updamon-backend/internal/sitrep"
 	"github.com/phides-code/updamon-backend/internal/domain"
 	"github.com/phides-code/updamon-backend/internal/gateway"
 	"github.com/phides-code/updamon-backend/internal/platform"
+	"github.com/phides-code/updamon-backend/internal/sitrep"
 	"github.com/phides-code/updamon-backend/internal/testutil"
 )
 
 func registeredSitrepGateway(repo sitrep.Repository) *gateway.Gateway {
-	g := gateway.NewGatewayWithCFTToken(platform.NewLogger(), testutil.TestCFTToken)
+	g := gateway.NewGatewayWithAuth(platform.NewLogger(), testutil.TestCFTToken, testutil.TestAdminKey)
 	g.Register(sitrep.PathPrefix, sitrep.NewHandler(repo, platform.NewLogger()))
 	return g
 }

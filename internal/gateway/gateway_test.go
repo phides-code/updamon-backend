@@ -27,7 +27,7 @@ func (stubResourceHandler) Handle(_ context.Context, _ events.APIGatewayProxyReq
 }
 
 func newTestGateway() *gateway.Gateway {
-	return gateway.NewGatewayWithCFTToken(platform.NewLogger(), testutil.TestCFTToken)
+	return gateway.NewGatewayWithAuth(platform.NewLogger(), testutil.TestCFTToken, testutil.TestAdminKey)
 }
 
 func getRequest(path string, headers map[string]string) events.APIGatewayProxyRequest {
@@ -59,14 +59,14 @@ func assertEnvelopeShape(t *testing.T, body string) {
 func TestGatewayUnknownResource(t *testing.T) {
 	t.Parallel()
 
-	resp, err := newTestGateway().Handle(context.Background(), getRequest(stubPath, testutil.CFTokenHeaders(testutil.TestCFTToken)))
+	resp, err := newTestGateway().Handle(context.Background(), getRequest(stubPath, testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey)))
 	testutil.RequireHandle(t, resp, err, http.StatusNotFound)
 }
 
 func TestGatewayEmptyPath(t *testing.T) {
 	t.Parallel()
 
-	resp, err := newTestGateway().Handle(context.Background(), getRequest("/", testutil.CFTokenHeaders(testutil.TestCFTToken)))
+	resp, err := newTestGateway().Handle(context.Background(), getRequest("/", testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey)))
 	testutil.RequireHandle(t, resp, err, http.StatusNotFound)
 }
 
@@ -74,6 +74,29 @@ func TestGatewayRejectsMissingCFTToken(t *testing.T) {
 	t.Parallel()
 
 	resp, err := newTestGateway().Handle(context.Background(), getRequest(stubPath, nil))
+	testutil.RequireHandle(t, resp, err, http.StatusUnauthorized)
+}
+
+func TestGatewayRejectsMissingAdminKey(t *testing.T) {
+	t.Parallel()
+
+	resp, err := newTestGateway().Handle(
+		context.Background(),
+		getRequest(stubPath, testutil.CFTokenHeaders(testutil.TestCFTToken)),
+	)
+	testutil.RequireHandle(t, resp, err, http.StatusUnauthorized)
+}
+
+func TestGatewayRejectsInvalidAdminKey(t *testing.T) {
+	t.Parallel()
+
+	headers := testutil.CFTokenHeaders(testutil.TestCFTToken)
+	headers[platform.AdminKeyHeader] = "wrong"
+
+	resp, err := newTestGateway().Handle(
+		context.Background(),
+		getRequest(stubPath, headers),
+	)
 	testutil.RequireHandle(t, resp, err, http.StatusUnauthorized)
 }
 
@@ -90,7 +113,7 @@ func TestGatewayRoutesRegisteredPrefix(t *testing.T) {
 	g := newTestGateway()
 	g.Register(stubPrefix, stubResourceHandler{})
 
-	resp, err := g.Handle(context.Background(), getRequest(stubPath, testutil.CFTokenHeaders(testutil.TestCFTToken)))
+	resp, err := g.Handle(context.Background(), getRequest(stubPath, testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey)))
 	envelope := testutil.RequireHandle(t, resp, err, http.StatusOK)
 	if envelope.Error != nil {
 		t.Fatalf("unexpected error: %v", envelope.Error)
@@ -114,7 +137,7 @@ func TestGatewayResponseEnvelopeShape(t *testing.T) {
 		g := newTestGateway()
 		g.Register(stubPrefix, stubResourceHandler{})
 
-		resp, err := g.Handle(context.Background(), getRequest(stubPath, testutil.CFTokenHeaders(testutil.TestCFTToken)))
+		resp, err := g.Handle(context.Background(), getRequest(stubPath, testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey)))
 		testutil.RequireHandle(t, resp, err, http.StatusOK)
 		assertEnvelopeShape(t, resp.Body)
 	})
@@ -122,8 +145,27 @@ func TestGatewayResponseEnvelopeShape(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
 
-		resp, err := newTestGateway().Handle(context.Background(), getRequest(stubPath, testutil.CFTokenHeaders(testutil.TestCFTToken)))
+		resp, err := newTestGateway().Handle(context.Background(), getRequest(stubPath, testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey)))
 		testutil.RequireHandle(t, resp, err, http.StatusNotFound)
 		assertEnvelopeShape(t, resp.Body)
 	})
+}
+
+func TestGatewayLocalRequiresAdminKey(t *testing.T) {
+	t.Setenv(platform.SAMLocalEnvVar, "true")
+
+	// No CF, no admin → 401 (admin enforced even locally)
+	resp, err := newTestGateway().Handle(context.Background(), getRequest(stubPath, nil))
+	testutil.RequireHandle(t, resp, err, http.StatusUnauthorized)
+}
+
+func TestGatewayLocalAllowsAdminKeyWithoutCFToken(t *testing.T) {
+	t.Setenv(platform.SAMLocalEnvVar, "true")
+
+	// Admin only → past auth; unregistered stub → 404
+	resp, err := newTestGateway().Handle(
+		context.Background(),
+		getRequest(stubPath, testutil.AdminKeyHeaders(testutil.TestAdminKey)),
+	)
+	testutil.RequireHandle(t, resp, err, http.StatusNotFound)
 }

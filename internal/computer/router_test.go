@@ -16,7 +16,7 @@ import (
 )
 
 func registeredComputerGateway(repo computer.Repository) *gateway.Gateway {
-	g := gateway.NewGatewayWithCFTToken(platform.NewLogger(), testutil.TestCFTToken)
+	g := gateway.NewGatewayWithAuth(platform.NewLogger(), testutil.TestCFTToken, testutil.TestAdminKey)
 	g.Register(computer.PathPrefix, computer.NewHandler(repo, platform.NewLogger()))
 	return g
 }

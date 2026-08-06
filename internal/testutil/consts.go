@@ -7,7 +7,21 @@ import "github.com/phides-code/updamon-backend/internal/platform"
 // Pair with platform.CFTTokenEnvVar via t.Setenv in composition tests.
 const TestCFTToken = "test-token"
 
+const TestAdminKey = "test-admin-key"
+
 // CFTokenHeaders returns request headers carrying the given CFT token.
 func CFTokenHeaders(token string) map[string]string {
 	return map[string]string{platform.CFTTokenHeader: token}
+}
+
+// AdminKeyHeaders returns request headers carrying the given Admin key.
+func AdminKeyHeaders(token string) map[string]string {
+	return map[string]string{platform.AdminKeyHeader: token}
+}
+
+func AuthHeaders(cfToken, adminKey string) map[string]string {
+	return map[string]string{
+		platform.CFTTokenHeader: cfToken,
+		platform.AdminKeyHeader: adminKey,
+	}
 }
