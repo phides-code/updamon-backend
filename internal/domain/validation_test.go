@@ -69,6 +69,8 @@ func TestValidateMAC(t *testing.T) {
 		{name: "colon separated", value: "cc:f4:11:32:cb:ff", wantErr: false},
 		{name: "hyphen separated", value: "cc-f4-11-32-cb-ff", wantErr: false},
 		{name: "dot separated", value: "ccf4.1132.cbff", wantErr: false},
+		{name: "n/a uppercase", value: "N/A", wantErr: false},
+		{name: "n/a lowercase", value: "n/a", wantErr: false},
 		{name: "empty", value: "", wantErr: true},
 		{name: "whitespace", value: "   ", wantErr: true},
 		{name: "not a mac", value: "not-a-mac", wantErr: true},

@@ -45,10 +45,14 @@ func ValidateIPv4(s string) error {
 }
 
 // ValidateMAC rejects blank values and anything that is not a 48-bit MAC address.
+// "N/A" (any casing) is allowed when a MAC is unavailable.
 func ValidateMAC(s string) error {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return ErrValidationFailed
+	}
+	if strings.EqualFold(s, "N/A") {
+		return nil
 	}
 	hw, err := net.ParseMAC(s)
 	if err != nil || len(hw) != 6 {

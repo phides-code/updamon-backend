@@ -149,7 +149,7 @@ List scans the full table. DynamoDB pagination stays inside the repository; it i
 **Validation**
 
 - `hostname`, `tailscale`, `bluetooth`: required, 1–100 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxStringLength`)
-- `wap`: required 48-bit MAC address (`domain.ValidateMAC`)
+- `wap`: required 48-bit MAC address, or `N/A` when unavailable (`domain.ValidateMAC`)
 - `free`, `df`, `who`: required, 1–1000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxMediumStringLength`)
 - `aptlog`, `last`: required, 1–10000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxLongStringLength`)
 - Path `{id}`: UUID, or 400 `invalid id`

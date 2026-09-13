@@ -70,6 +70,15 @@ func TestValidateCreateInput(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "n/a wap",
+			input: func() sitrep.CreateInput {
+				in := validCreateInput()
+				in.WAP = "N/A"
+				return in
+			}(),
+			wantErr: false,
+		},
+		{
 			name: "invalid wap",
 			input: func() sitrep.CreateInput {
 				in := validCreateInput()
