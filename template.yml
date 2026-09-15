@@ -21,9 +21,9 @@ Resources:
       StageName: Prod
       Cors:
         AllowMethods: "'OPTIONS, POST, GET, PUT, DELETE'"
-        AllowHeaders: "'Content-Type, X-CF-Token'"
-        AllowOrigin: "'http://localhost:5173'" 
-#        AllowOrigin: "'https://dqib4iw4v29ca.cloudfront.net'" 
+        AllowHeaders: "'Content-Type, X-CF-Token, X-Admin-Key'"
+#        AllowOrigin: "'http://localhost:5173'" 
+        AllowOrigin: "'https://dqib4iw4v29ca.cloudfront.net'"
 
       # Logging settings
       MethodSettings:
