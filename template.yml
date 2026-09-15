@@ -122,6 +122,18 @@ Resources:
             Path: /sitreps
             Method: GET
             RestApiId: !Ref UpdamonBackend
+        GetSitrepsForHost:
+          Type: Api
+          Properties:
+            Path: /sitreps/forhost/{hostname}
+            Method: GET
+            RestApiId: !Ref UpdamonBackend
+        SitrepsOptionsForHost:
+          Type: Api
+          Properties:
+            Path: /sitreps/forhost/{hostname}
+            Method: OPTIONS
+            RestApiId: !Ref UpdamonBackend
         PostSitrep:
           Type: Api
           Properties:

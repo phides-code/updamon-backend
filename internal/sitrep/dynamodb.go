@@ -102,12 +102,33 @@ func (r *dynamoRepository) GetByID(ctx context.Context, id string) (Sitrep, erro
 }
 
 func (r *dynamoRepository) List(ctx context.Context) ([]Sitrep, error) {
-	var items []Sitrep
+	return r.scan(ctx, nil, nil)
+}
+
+func (r *dynamoRepository) ListByHostname(ctx context.Context, hostname string) ([]Sitrep, error) {
+	return r.scan(ctx,
+		aws.String(AttrHostname+" = :hostname"),
+		map[string]types.AttributeValue{
+			":hostname": &types.AttributeValueMemberS{Value: hostname},
+		},
+	)
+}
+
+func (r *dynamoRepository) scan(
+	ctx context.Context,
+	filterExpression *string,
+	expressionAttributeValues map[string]types.AttributeValue,
+) ([]Sitrep, error) {
+	items := make([]Sitrep, 0)
 	var startKey map[string]types.AttributeValue
 
 	for {
 		input := &dynamodb.ScanInput{
 			TableName: aws.String(TableName),
+		}
+		if filterExpression != nil {
+			input.FilterExpression = filterExpression
+			input.ExpressionAttributeValues = expressionAttributeValues
 		}
 		if startKey != nil {
 			input.ExclusiveStartKey = startKey

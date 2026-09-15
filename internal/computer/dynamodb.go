@@ -106,7 +106,7 @@ func (r *dynamoRepository) GetByID(ctx context.Context, id string) (Computer, er
 }
 
 func (r *dynamoRepository) List(ctx context.Context) ([]Computer, error) {
-	var items []Computer
+	items := make([]Computer, 0)
 	var startKey map[string]types.AttributeValue
 
 	for {

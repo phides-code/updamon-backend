@@ -106,11 +106,12 @@ List scans the full table. DynamoDB pagination stays inside the repository; it i
 
 ### Sitreps (`/sitreps`)
 
-| Method   | Path             | Behavior                                    |
-| -------- | ---------------- | ------------------------------------------- |
-| `GET`    | `/sitreps`       | List all                                    |
-| `GET`    | `/sitreps/{id}`  | Get by UUID                                 |
-| `POST`   | `/sitreps`       | Create (`id` and `createdOn` set by server) |
+| Method | Path                          | Behavior                                    |
+| ------ | ----------------------------- | ------------------------------------------- |
+| `GET`  | `/sitreps`                    | List all                                    |
+| `GET`  | `/sitreps/{id}`               | Get by UUID                                 |
+| `GET`  | `/sitreps/forhost/{hostname}` | List all sitreps for a hostname             |
+| `POST` | `/sitreps`                    | Create (`id` and `createdOn` set by server) |
 
 **Item** (list returns an array of the same shape):
 
@@ -153,8 +154,9 @@ List scans the full table. DynamoDB pagination stays inside the repository; it i
 - `free`, `df`, `who`: required, 1–1000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxMediumStringLength`)
 - `aptlog`, `last`: required, 1–10000 Unicode characters (`domain.DefaultMinStringLength`–`DefaultMaxLongStringLength`)
 - Path `{id}`: UUID, or 400 `invalid id`
+- Path `{hostname}` on `/sitreps/forhost/{hostname}`: same short-string rules as create `hostname`
 
-List scans the full table. DynamoDB pagination stays inside the repository; it is not exposed over HTTP.
+List and list-by-hostname scan the full table (hostname uses a filter). DynamoDB pagination stays inside the repository; it is not exposed over HTTP.
 
 ## Development
 
@@ -176,19 +178,19 @@ curl http://localhost:8000/computers
 
 Example: add `origin` to computer. Prefer TDD: failing test → smallest fix → green. Paths below use computer; substitute `<resource>` for another package.
 
-| Step | File(s)                                  | Do this                                                                                                                                                                                                                                                                         |
-| ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | `internal/computer/computer_test.go`     | Extend local `validCreateInput` / `validUpdateInput`. Add a case that blanks (or otherwise breaks) the new field.                                                                                                                                                               |
+| Step | File(s)                                  | Do this                                                                                                                                                                                                                                                                  |
+| ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | `internal/computer/computer_test.go`     | Extend local `validCreateInput` / `validUpdateInput`. Add a case that blanks (or otherwise breaks) the new field.                                                                                                                                                        |
 | 2    | `internal/computer/computer.go`          | Add the field on `Computer` with `json` + `dynamodbav` tags. If clients set it, add it to `CreateInput` / `UpdateInput` and validate (`domain.ValidateRequiredString` / `ValidateIPv4`, or custom). Server-owned fields are **not** on inputs — set them in the handler. |
-| 3    | `internal/testutil/computer_fixtures.go` | Add the field to `ComputerBody`, `ValidComputerBody`, `ComputerWithID`, and list fixtures if needed.                                                                                                                                                                            |
-| 4    | `internal/computer/fixtures_test.go`     | If the field is required on create/update, extend `newComputerValidationBodies` only when you need a new _shape_; reuse existing empty/whitespace/too-long fixtures when the rule matches hostname.                                                                             |
-| 5    | `internal/computer/dynamodb.go`          | Add `Attr…` constant. If PUT-updatable, add it to the Update `SET` / names / values maps (keep attribute names alphabetical).                                                                                                                                                   |
-| 6    | `internal/computer/assert_test.go`       | Add `Attr…` to the expected key list in `assertComputerDataKeys` (alphabetical).                                                                                                                                                                                                |
-| 7    | `internal/computer/handler_test.go`      | Success create/update: assert the new field when it appears in the response. Client-error rows if validation can fail on this field.                                                                                                                                            |
-| 8    | `internal/computer/handler.go`           | Add the field to `writePayload`; copy into create/update inputs and the entity passed to the repo.                                                                                                                                                                              |
-| 9    | `internal/computer/dynamodb_test.go`     | If PUT-updatable: include the attr in the update success `AssertUpdateSets` map. Create/Get usually pick the field up via fixtures automatically.                                                                                                                               |
-| 10   | `internal/computer/mocks_test.go`        | Only if a hand-built `Computer{…}` omits the new field and a test compares full structs.                                                                                                                                                                                        |
-| 11   | `README.md`                              | Update the computers item shape, create/update bodies, validation, and PUT behavior row.                                                                                                                                                                                        |
+| 3    | `internal/testutil/computer_fixtures.go` | Add the field to `ComputerBody`, `ValidComputerBody`, `ComputerWithID`, and list fixtures if needed.                                                                                                                                                                     |
+| 4    | `internal/computer/fixtures_test.go`     | If the field is required on create/update, extend `newComputerValidationBodies` only when you need a new _shape_; reuse existing empty/whitespace/too-long fixtures when the rule matches hostname.                                                                      |
+| 5    | `internal/computer/dynamodb.go`          | Add `Attr…` constant. If PUT-updatable, add it to the Update `SET` / names / values maps (keep attribute names alphabetical).                                                                                                                                            |
+| 6    | `internal/computer/assert_test.go`       | Add `Attr…` to the expected key list in `assertComputerDataKeys` (alphabetical).                                                                                                                                                                                         |
+| 7    | `internal/computer/handler_test.go`      | Success create/update: assert the new field when it appears in the response. Client-error rows if validation can fail on this field.                                                                                                                                     |
+| 8    | `internal/computer/handler.go`           | Add the field to `writePayload`; copy into create/update inputs and the entity passed to the repo.                                                                                                                                                                       |
+| 9    | `internal/computer/dynamodb_test.go`     | If PUT-updatable: include the attr in the update success `AssertUpdateSets` map. Create/Get usually pick the field up via fixtures automatically.                                                                                                                        |
+| 10   | `internal/computer/mocks_test.go`        | Only if a hand-built `Computer{…}` omits the new field and a test compares full structs.                                                                                                                                                                                 |
+| 11   | `README.md`                              | Update the computers item shape, create/update bodies, validation, and PUT behavior row.                                                                                                                                                                                 |
 
 Skip DynamoDB Update changes (steps 5 and 9) for read-only or create-only fields. Run `make test` before opening a PR.
 

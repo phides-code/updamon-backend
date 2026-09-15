@@ -387,3 +387,94 @@ func TestSitrepHandlerList(t *testing.T) {
 	}
 }
 
+func TestSitrepHandlerListByHostname(t *testing.T) {
+	t.Parallel()
+
+	sitrepOne, sitrepTwo, _ := testutil.ListSitreps(false)
+	wantItems := []sitrep.Sitrep{sitrepOne, sitrepTwo}
+	hostname := testutil.TestSitrepHostname
+
+	tests := []struct {
+		name         string
+		path         string
+		hostname     string
+		wantStatus   int
+		wantItems    []sitrep.Sitrep
+		wantErrorMsg string
+		setupRepo    func() *mockSitrepRepository
+	}{
+		{
+			name:       "GET forhost returns items",
+			path:       "/" + sitrep.PathPrefix + "/" + sitrep.ForHostSegment + "/" + hostname,
+			hostname:   hostname,
+			wantStatus: http.StatusOK,
+			wantItems:  wantItems,
+			setupRepo:  func() *mockSitrepRepository { return listSitrepByHostnameRepo(wantItems) },
+		},
+		{
+			name:       "GET forhost empty",
+			path:       "/" + sitrep.PathPrefix + "/" + sitrep.ForHostSegment + "/" + hostname,
+			hostname:   hostname,
+			wantStatus: http.StatusOK,
+			wantItems:  []sitrep.Sitrep{},
+			setupRepo:  func() *mockSitrepRepository { return listSitrepByHostnameRepo([]sitrep.Sitrep{}) },
+		},
+		{
+			name:         "GET forhost empty hostname",
+			path:         "/" + sitrep.PathPrefix + "/" + sitrep.ForHostSegment + "/",
+			hostname:     "",
+			wantStatus:   http.StatusBadRequest,
+			wantErrorMsg: domain.ErrValidationFailed.Error(),
+			setupRepo:    panicSitrepRepo,
+		},
+		{
+			name:         "GET forhost repo failure",
+			path:         "/" + sitrep.PathPrefix + "/" + sitrep.ForHostSegment + "/" + hostname,
+			hostname:     hostname,
+			wantStatus:   http.StatusInternalServerError,
+			wantErrorMsg: platform.InternalServerErrorMessage,
+			setupRepo: func() *mockSitrepRepository {
+				return &mockSitrepRepository{
+					listByHostnameFn: func(_ context.Context, _ string) ([]sitrep.Sitrep, error) {
+						return nil, errors.New("db down")
+					},
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			h := sitrep.NewHandler(tt.setupRepo(), platform.NewLogger())
+
+			req := events.APIGatewayProxyRequest{
+				HTTPMethod: http.MethodGet,
+				Path:       tt.path,
+			}
+			if tt.hostname != "" {
+				req.PathParameters = map[string]string{sitrep.AttrHostname: tt.hostname}
+			}
+
+			resp, err := h.Handle(context.Background(), req)
+			envelope := testutil.RequireHandle(t, resp, err, tt.wantStatus)
+
+			if tt.wantErrorMsg != "" {
+				testutil.AssertAPIError(t, envelope, tt.wantErrorMsg)
+				return
+			}
+
+			items := decodeSitrepListData(t, envelope)
+			if len(items) != len(tt.wantItems) {
+				t.Fatalf("len(items) = %d, want %d", len(items), len(tt.wantItems))
+			}
+			for i := range tt.wantItems {
+				if items[i] != tt.wantItems[i] {
+					t.Fatalf("items[%d] = %+v, want %+v", i, items[i], tt.wantItems[i])
+				}
+			}
+		})
+	}
+}
+

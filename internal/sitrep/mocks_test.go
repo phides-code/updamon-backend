@@ -9,9 +9,10 @@ import (
 )
 
 type mockSitrepRepository struct {
-	createFn func(ctx context.Context, b sitrep.Sitrep) (sitrep.Sitrep, error)
-	getFn    func(ctx context.Context, id string) (sitrep.Sitrep, error)
-	listFn   func(ctx context.Context) ([]sitrep.Sitrep, error)
+	createFn         func(ctx context.Context, b sitrep.Sitrep) (sitrep.Sitrep, error)
+	getFn            func(ctx context.Context, id string) (sitrep.Sitrep, error)
+	listFn           func(ctx context.Context) ([]sitrep.Sitrep, error)
+	listByHostnameFn func(ctx context.Context, hostname string) ([]sitrep.Sitrep, error)
 }
 
 func (m *mockSitrepRepository) Create(ctx context.Context, b sitrep.Sitrep) (sitrep.Sitrep, error) {
@@ -26,6 +27,10 @@ func (m *mockSitrepRepository) List(ctx context.Context) ([]sitrep.Sitrep, error
 	return m.listFn(ctx)
 }
 
+func (m *mockSitrepRepository) ListByHostname(ctx context.Context, hostname string) ([]sitrep.Sitrep, error) {
+	return m.listByHostnameFn(ctx, hostname)
+}
+
 func emptySitrepRepo() *mockSitrepRepository {
 	return &mockSitrepRepository{
 		createFn: func(_ context.Context, _ sitrep.Sitrep) (sitrep.Sitrep, error) {
@@ -35,6 +40,9 @@ func emptySitrepRepo() *mockSitrepRepository {
 			return sitrep.Sitrep{}, nil
 		},
 		listFn: func(_ context.Context) ([]sitrep.Sitrep, error) {
+			return nil, nil
+		},
+		listByHostnameFn: func(_ context.Context, _ string) ([]sitrep.Sitrep, error) {
 			return nil, nil
 		},
 	}
@@ -60,6 +68,9 @@ func dispatchSitrepRepo() *mockSitrepRepository {
 		listFn: func(_ context.Context) ([]sitrep.Sitrep, error) {
 			return nil, nil
 		},
+		listByHostnameFn: func(_ context.Context, _ string) ([]sitrep.Sitrep, error) {
+			return nil, nil
+		},
 		createFn: func(_ context.Context, b sitrep.Sitrep) (sitrep.Sitrep, error) {
 			return b, nil
 		},
@@ -69,6 +80,14 @@ func dispatchSitrepRepo() *mockSitrepRepository {
 func listSitrepRepo(items []sitrep.Sitrep) *mockSitrepRepository {
 	return &mockSitrepRepository{
 		listFn: func(_ context.Context) ([]sitrep.Sitrep, error) {
+			return items, nil
+		},
+	}
+}
+
+func listSitrepByHostnameRepo(items []sitrep.Sitrep) *mockSitrepRepository {
+	return &mockSitrepRepository{
+		listByHostnameFn: func(_ context.Context, _ string) ([]sitrep.Sitrep, error) {
 			return items, nil
 		},
 	}
@@ -88,6 +107,10 @@ func panicSitrepRepo() *mockSitrepRepository {
 			return sitrep.Sitrep{}, nil
 		},
 		listFn: func(context.Context) ([]sitrep.Sitrep, error) {
+			panicFn()
+			return nil, nil
+		},
+		listByHostnameFn: func(context.Context, string) ([]sitrep.Sitrep, error) {
 			panicFn()
 			return nil, nil
 		},

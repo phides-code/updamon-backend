@@ -278,6 +278,101 @@ func TestSitrepRepositoryList(t *testing.T) {
 				t.Fatalf("List: %v", err)
 			}
 
+			if items == nil {
+				t.Fatal("List returned nil slice, want empty non-nil slice")
+			}
+
+			if len(items) != len(tt.wantItems) {
+				t.Fatalf("len(items) = %d, want %d", len(items), len(tt.wantItems))
+			}
+
+			for i := range tt.wantItems {
+				if items[i] != tt.wantItems[i] {
+					t.Fatalf("items[%d] = %+v, want %+v", i, items[i], tt.wantItems[i])
+				}
+			}
+		})
+	}
+}
+
+func TestSitrepRepositoryListByHostname(t *testing.T) {
+	t.Parallel()
+
+	b1, b2, _ := testutil.ListSitreps(true)
+	wantItems := []sitrep.Sitrep{b1, b2}
+	scanOutputItems := scanItems(t, wantItems)
+	hostname := b1.Hostname
+
+	tests := []struct {
+		name      string
+		setupMock func(t *testing.T) *mockDynamoClient
+		wantItems []sitrep.Sitrep
+		wantErr   bool
+	}{
+		{
+			name: "returns filtered items",
+			setupMock: func(_ *testing.T) *mockDynamoClient {
+				return &mockDynamoClient{
+					scanFn: func(_ context.Context, params *awsdynamodb.ScanInput, _ ...func(*awsdynamodb.Options)) (*awsdynamodb.ScanOutput, error) {
+						if params.FilterExpression == nil || *params.FilterExpression != sitrep.AttrHostname+" = :hostname" {
+							t.Fatalf("FilterExpression = %v, want hostname filter", params.FilterExpression)
+						}
+						got, ok := params.ExpressionAttributeValues[":hostname"].(*types.AttributeValueMemberS)
+						if !ok || got.Value != hostname {
+							t.Fatalf("ExpressionAttributeValues[:hostname] = %v, want %q", params.ExpressionAttributeValues[":hostname"], hostname)
+						}
+						return &awsdynamodb.ScanOutput{Items: scanOutputItems}, nil
+					},
+				}
+			},
+			wantItems: wantItems,
+		},
+		{
+			name: "empty",
+			setupMock: func(_ *testing.T) *mockDynamoClient {
+				return &mockDynamoClient{
+					scanFn: func(_ context.Context, _ *awsdynamodb.ScanInput, _ ...func(*awsdynamodb.Options)) (*awsdynamodb.ScanOutput, error) {
+						return &awsdynamodb.ScanOutput{Items: nil}, nil
+					},
+				}
+			},
+			wantItems: []sitrep.Sitrep{},
+		},
+		{
+			name: "sdk error",
+			setupMock: func(_ *testing.T) *mockDynamoClient {
+				return &mockDynamoClient{
+					scanFn: func(_ context.Context, _ *awsdynamodb.ScanInput, _ ...func(*awsdynamodb.Options)) (*awsdynamodb.ScanOutput, error) {
+						return nil, errDynamoUnavailable
+					},
+				}
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			repo := sitrep.NewRepository(tt.setupMock(t))
+			items, err := repo.ListByHostname(context.Background(), hostname)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("ListByHostname: %v", err)
+			}
+
+			if items == nil {
+				t.Fatal("ListByHostname returned nil slice, want empty non-nil slice")
+			}
+
 			if len(items) != len(tt.wantItems) {
 				t.Fatalf("len(items) = %d, want %d", len(items), len(tt.wantItems))
 			}

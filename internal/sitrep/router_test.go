@@ -21,16 +21,20 @@ func registeredSitrepGateway(repo sitrep.Repository) *gateway.Gateway {
 	return g
 }
 
-func TestGatewayRoutesSitreps(t *testing.T) {
+func TestGatewayRoutesSitrepsForHost(t *testing.T) {
 	t.Parallel()
 
-	id := uuid.NewString()
-	g := registeredSitrepGateway(dispatchSitrepRepo())
+	hostname := testutil.TestSitrepHostname
+	items := []sitrep.Sitrep{{
+		ID:       uuid.NewString(),
+		Hostname: hostname,
+	}}
+	g := registeredSitrepGateway(listSitrepByHostnameRepo(items))
 
 	resp, err := g.Handle(context.Background(), events.APIGatewayProxyRequest{
 		HTTPMethod:     http.MethodGet,
-		Path:           "/" + sitrep.PathPrefix + "/" + id,
-		PathParameters: map[string]string{sitrep.AttrID: id},
+		Path:           "/" + sitrep.PathPrefix + "/" + sitrep.ForHostSegment + "/" + hostname,
+		PathParameters: map[string]string{sitrep.AttrHostname: hostname},
 		Headers:        testutil.AuthHeaders(testutil.TestCFTToken, testutil.TestAdminKey),
 	})
 	testutil.RequireHandle(t, resp, err, http.StatusOK)

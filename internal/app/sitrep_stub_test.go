@@ -18,3 +18,6 @@ func (stubSitrepRepo) GetByID(_ context.Context, _ string) (sitrep.Sitrep, error
 func (stubSitrepRepo) List(_ context.Context) ([]sitrep.Sitrep, error) {
 	return nil, nil
 }
+func (stubSitrepRepo) ListByHostname(_ context.Context, _ string) ([]sitrep.Sitrep, error) {
+	return nil, nil
+}

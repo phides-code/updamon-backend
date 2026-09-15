@@ -22,6 +22,9 @@ func NewHandler(repo Repository, logger *platform.Logger) *Handler {
 	return &Handler{repo: repo, logger: logger}
 }
 
+// ForHostSegment is the path segment for hostname-scoped list: /sitreps/forhost/{hostname}.
+const ForHostSegment = "forhost"
+
 func (h *Handler) Handle(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	const op = "sitrep request"
 
@@ -29,6 +32,9 @@ func (h *Handler) Handle(ctx context.Context, req events.APIGatewayProxyRequest)
 
 	switch req.HTTPMethod {
 	case http.MethodGet:
+		if hostname, ok := forHostHostname(req); ok {
+			return h.listByHostname(ctx, hostname)
+		}
 		if id == "" {
 			return h.list(ctx, req)
 		}
@@ -40,12 +46,29 @@ func (h *Handler) Handle(ctx context.Context, req events.APIGatewayProxyRequest)
 	}
 }
 
+func forHostHostname(req events.APIGatewayProxyRequest) (string, bool) {
+	parts := strings.Split(strings.Trim(req.Path, "/"), "/")
+	if len(parts) < 2 || parts[0] != PathPrefix || parts[1] != ForHostSegment {
+		return "", false
+	}
+	if hostname := strings.TrimSpace(req.PathParameters[AttrHostname]); hostname != "" {
+		return hostname, true
+	}
+	if len(parts) >= 3 {
+		return strings.TrimSpace(parts[2]), true
+	}
+	return "", true
+}
+
 func (h *Handler) list(ctx context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	const op = "list sitreps"
 
 	items, err := h.repo.List(ctx)
 	if err != nil {
 		return h.errorResponse(ctx, err, op)
+	}
+	if items == nil {
+		items = []Sitrep{}
 	}
 
 	return platform.SuccessResponse(http.StatusOK, items)
@@ -64,6 +87,24 @@ func (h *Handler) getByID(ctx context.Context, id string) (events.APIGatewayProx
 	}
 
 	return platform.SuccessResponse(http.StatusOK, item)
+}
+
+func (h *Handler) listByHostname(ctx context.Context, hostname string) (events.APIGatewayProxyResponse, error) {
+	const op = "list sitreps by hostname"
+
+	if err := validateShortString(hostname); err != nil {
+		return h.errorResponse(ctx, err, op)
+	}
+
+	items, err := h.repo.ListByHostname(ctx, hostname)
+	if err != nil {
+		return h.errorResponse(ctx, err, op)
+	}
+	if items == nil {
+		items = []Sitrep{}
+	}
+
+	return platform.SuccessResponse(http.StatusOK, items)
 }
 
 type writePayload struct {

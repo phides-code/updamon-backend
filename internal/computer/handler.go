@@ -51,6 +51,9 @@ func (h *Handler) list(ctx context.Context, _ events.APIGatewayProxyRequest) (ev
 	if err != nil {
 		return h.errorResponse(ctx, err, op)
 	}
+	if items == nil {
+		items = []Computer{}
+	}
 
 	return platform.SuccessResponse(http.StatusOK, items)
 }

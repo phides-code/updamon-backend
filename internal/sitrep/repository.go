@@ -7,4 +7,5 @@ type Repository interface {
 	Create(ctx context.Context, sitrep Sitrep) (Sitrep, error)
 	GetByID(ctx context.Context, id string) (Sitrep, error)
 	List(ctx context.Context) ([]Sitrep, error)
+	ListByHostname(ctx context.Context, hostname string) ([]Sitrep, error)
 }
